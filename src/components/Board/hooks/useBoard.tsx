@@ -50,7 +50,12 @@ const listMock = [
 export const useBoard = () => {
   const [lists, setLists] = useState(listMock);
 
-  function move(fromList: number, toList: number, from: number, to: number) {
+  function moveCard(
+    fromList: number,
+    toList: number,
+    from: number,
+    to: number
+  ) {
     setLists(
       produce(lists, (draft) => {
         const dragged = draft[fromList].cards[from];
@@ -61,5 +66,13 @@ export const useBoard = () => {
     );
   }
 
-  return { move, lists };
+  function deleteCard(listIndex: number, cardIndex: number) {
+    setLists(
+      produce(lists, (draft) => {
+        draft[listIndex].cards.splice(cardIndex, 1);
+      })
+    );
+  }
+
+  return { lists, moveCard, deleteCard };
 };

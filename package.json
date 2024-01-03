@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dnd-kit/sortable": "^8.0.0",
     "@heroicons/react": "^2.0.18",
     "clsx": "^2.0.0",
     "immer": "^10.0.3",

@@ -1,6 +1,6 @@
 "use client";
 import { BoardContext } from "@/components/Board/BoardContext";
-import { useContext, useRef } from "react";
+import { useCallback, useContext, useMemo, useRef } from "react";
 import { useDrop } from "react-dnd";
 
 type Props = {
@@ -10,34 +10,48 @@ type Props = {
 export const useBoardList = ({ listIndex }: Props) => {
   const DRAG_TYPE = "CARD";
 
-  const { lists, move } = useContext(BoardContext);
+  const { lists, moveCard, isMoving, setIsMoving } = useContext(BoardContext);
 
-  const ref = useRef<HTMLLIElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const [, dropRef] = useDrop({
-    accept: [DRAG_TYPE],
-    hover: (
-      item: {
-        listIndex: number;
-      },
-      monitor
-    ) => {
-      const draggedListIndex = item.listIndex;
-      const targetListIndex = listIndex;
+  const targetListLength: number = useMemo(
+    () => lists[listIndex].cards.length,
+    [listIndex, lists]
+  );
 
-      if (
-        draggedListIndex === targetListIndex ||
-        lists[targetListIndex].cards.length > 0
-      ) {
+  const handleHover = useCallback(
+    (item: { index: number; listIndex: number }) => {
+      if (isMoving && targetListLength) {
         return;
       }
 
-      const draggedIndex = monitor.getItem().listIndex;
-      const targetIndex = 0;
+      const draggedListIndex = item.listIndex;
+      const targetListIndex = listIndex;
 
-      move(draggedListIndex, targetListIndex, draggedIndex, targetIndex);
+      if (draggedListIndex === targetListIndex) {
+        return;
+      }
+
+      const draggedIndex = item.index;
+      const targetIndex = targetListLength;
+
+      moveCard(
+        draggedListIndex,
+        targetListIndex,
+        draggedIndex,
+        targetIndex,
+        "list"
+      );
+      setIsMoving(false);
+      item.index = targetIndex;
       item.listIndex = targetListIndex;
     },
+    [isMoving, listIndex, moveCard, setIsMoving, targetListLength]
+  );
+
+  const [, dropRef] = useDrop({
+    accept: [DRAG_TYPE],
+    hover: handleHover,
   });
 
   dropRef(ref);

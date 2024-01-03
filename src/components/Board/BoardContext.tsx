@@ -1,6 +1,8 @@
 import { createContext } from "react";
 
 type BoardContextProps = {
+  isMoving: boolean;
+  setIsMoving: (value: boolean) => void;
   lists: Array<{
     id: string;
     title: string;
@@ -9,6 +11,13 @@ type BoardContextProps = {
       text: string;
     }>;
   }>;
-  move: (fromList: number, toList: number, from: number, to: number) => void;
+  moveCard: (
+    fromList: number,
+    toList: number,
+    from: number,
+    to: number,
+    origin: string
+  ) => void;
+  deleteCard: (listIndex: number, cardIndex: number) => void;
 };
 export const BoardContext = createContext({} as BoardContextProps);

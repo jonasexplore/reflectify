@@ -1,7 +1,7 @@
 "use client";
 import { BoardContext } from "@/components/Board/BoardContext";
-import { useContext, useRef } from "react";
-import { useDrag, useDrop } from "react-dnd";
+import { useCallback, useContext, useRef } from "react";
+import { DropTargetMonitor, useDrag, useDrop } from "react-dnd";
 
 type Props = {
   index: number;
@@ -11,7 +11,7 @@ type Props = {
 export const useCard = ({ index, listIndex }: Props) => {
   const DRAG_TYPE = "CARD";
 
-  const { move } = useContext(BoardContext);
+  const { moveCard, setIsMoving } = useContext(BoardContext);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -23,19 +23,29 @@ export const useCard = ({ index, listIndex }: Props) => {
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    isDragging: (monitor) => {
+      const item = monitor.getItem();
+      return item.index === index && item.listIndex === listIndex;
+    },
     type: DRAG_TYPE,
   });
 
-  const [, dropRef] = useDrop({
-    accept: [DRAG_TYPE],
-    hover: (
+  const handleHover = useCallback(
+    (
       item: {
-        type: string;
         index: number;
         listIndex: number;
       },
-      monitor
+      monitor: DropTargetMonitor<
+        {
+          index: number;
+          listIndex: number;
+        },
+        unknown
+      >
     ) => {
+      setIsMoving(true);
+
       const draggedListIndex = item.listIndex;
       const targetListIndex = listIndex;
 
@@ -65,11 +75,24 @@ export const useCard = ({ index, listIndex }: Props) => {
         return;
       }
 
-      move(draggedListIndex, targetListIndex, draggedIndex, targetIndex);
+      moveCard(
+        draggedListIndex,
+        targetListIndex,
+        draggedIndex,
+        targetIndex,
+        "card"
+      );
 
       item.index = targetIndex;
       item.listIndex = targetListIndex;
+      setIsMoving(false);
     },
+    [index, listIndex, moveCard, setIsMoving]
+  );
+
+  const [, dropRef] = useDrop({
+    accept: [DRAG_TYPE],
+    hover: handleHover,
   });
 
   dragRef(dropRef(ref));
