@@ -8,7 +8,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowsPointingInIcon } from "@heroicons/react/24/outline";
+import { ArrowsPointingInIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -40,7 +40,7 @@ export const Container = ({ title, id, container, items }: Props) => {
     <li
       ref={setNodeRef}
       key={id}
-      className="w-full bg-slate-800 rounded p-2 h-full"
+      className="w-full bg-slate-100 rounded p-2 h-full"
       style={style}
     >
       <div className="flex justify-between">
@@ -56,6 +56,10 @@ export const Container = ({ title, id, container, items }: Props) => {
           <SortableItem key={id} id={id} />
         ))}
       </SortableContext>
+      <div className="flex items-center gap-2 justify-center cursor-pointer rounded-xl border border-dashed p-4 mx-2 border-slate-300">
+        <PlusIcon className="w-4 h-4" />
+        Adicionar
+      </div>
     </li>
   );
 };
