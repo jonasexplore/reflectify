@@ -8,7 +8,7 @@ type Props = {
 
 export const Card = ({ children }: Props) => {
   return (
-    <div className="rounded p-2 flex flex-col gap-2 bg-slate-900">
+    <div className="rounded-xl p-2 flex flex-col gap-2 bg-slate-50 border-slate-200 border">
       <div>
         <div>{children}</div>
         <CardFooter />
