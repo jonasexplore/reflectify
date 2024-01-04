@@ -21,15 +21,21 @@ type Props = {
 };
 
 export const Container = ({ title, id, container, items }: Props) => {
-  const { setNodeRef, transition, transform, attributes, listeners } =
-    useSortable({
-      id,
-      data: {
-        type: "container",
-        children: items,
-      },
-      animateLayoutChanges,
-    });
+  const {
+    setNodeRef,
+    transition,
+    transform,
+    attributes,
+    listeners,
+    isDragging,
+  } = useSortable({
+    id,
+    data: {
+      type: "container",
+      children: items,
+    },
+    animateLayoutChanges,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -37,10 +43,14 @@ export const Container = ({ title, id, container, items }: Props) => {
   };
 
   return (
-    <li
+    <div
       ref={setNodeRef}
       key={id}
-      className="w-full bg-slate-100 rounded p-2 h-full"
+      className={
+        isDragging
+          ? "w-full bg-slate-900 rounded p-2 h-full opacity-50"
+          : "w-full bg-slate-900 rounded p-2 h-full"
+      }
       style={style}
     >
       <div className="flex justify-between">
@@ -60,6 +70,6 @@ export const Container = ({ title, id, container, items }: Props) => {
         <PlusIcon className="w-4 h-4" />
         Adicionar
       </div>
-    </li>
+    </div>
   );
 };

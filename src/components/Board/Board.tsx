@@ -1,4 +1,3 @@
-import { useBoard } from "./hooks/useBoard";
 import {
   CollisionDetection,
   DndContext,
@@ -25,7 +24,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal, unstable_batchedUpdates } from "react-dom";
+import { unstable_batchedUpdates } from "react-dom";
 import { Container } from "./components/Container";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { PlusIcon } from "@heroicons/react/20/solid";
@@ -278,25 +277,11 @@ export const Board = () => {
     });
   }
 
-  const getIndex = (id: UniqueIdentifier) => {
-    const container = findContainer(id);
-
-    if (!container) {
-      return -1;
-    }
-
-    const index = items[container].indexOf(id);
-
-    return index;
-  };
-
   useEffect(() => {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });
   }, [items]);
-
-  console.log(activeId);
 
   return (
     <DndContext
@@ -316,7 +301,7 @@ export const Board = () => {
       }}
       modifiers={[restrictToWindowEdges]}
     >
-      <ul className="h-full flex gap-1">
+      <div className="h-full flex gap-1">
         <SortableContext
           items={[...containers, PLACEHOLDER_ID]}
           strategy={horizontalListSortingStrategy}
@@ -334,29 +319,34 @@ export const Board = () => {
             <PlusIcon /> Adicionar
           </button>
         </SortableContext>
-      </ul>
-
-      {createPortal(
-        <DragOverlay
-          adjustScale={true}
-          dropAnimation={{
-            sideEffects: defaultDropAnimationSideEffects({
-              styles: {
-                active: {
-                  opacity: "0.5",
-                },
+      </div>
+      <DragOverlay
+        adjustScale={true}
+        dropAnimation={{
+          sideEffects: defaultDropAnimationSideEffects({
+            styles: {
+              active: {
+                opacity: "0.5",
               },
-            }),
-          }}
-        >
-          {activeId ? (
+            },
+          }),
+        }}
+      >
+        {activeId && containers.includes(activeId) ? (
+          <Container
+            title={activeId}
+            container={activeId}
+            id={activeId}
+            items={items[activeId]}
+          />
+        ) : (
+          activeId && (
             <div className="cursor-grabbing">
-              <Card>Card {activeId}</Card>{" "}
+              <Card>{`Card ${activeId}`}</Card>
             </div>
-          ) : null}
-        </DragOverlay>,
-        document.body
-      )}
+          )
+        )}
+      </DragOverlay>
     </DndContext>
   );
 };
