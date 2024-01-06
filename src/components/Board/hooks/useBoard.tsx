@@ -293,7 +293,7 @@ export const useBoard = () => {
         {
           color: "red",
           id: newContainerId,
-          name: "Coluna " + containers.length + 1,
+          name: `Coluna ${containers.length + 1}`,
         },
       ]);
     });

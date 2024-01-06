@@ -78,9 +78,9 @@ export const Board = () => {
       >
         {activeId && containersNames.includes(activeId) ? (
           <Container
-            handlerDelete={handlerDelete}
             id={activeId}
             items={items[activeId]}
+            handlerDelete={handlerDelete}
           />
         ) : (
           activeId && <SortableItem id={activeId} />
