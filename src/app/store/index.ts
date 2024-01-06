@@ -2,18 +2,20 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { create } from "zustand";
 
 type LikeProps = {
+  id: string;
   userId: string;
   timestamp: string;
 };
 
 type CommentProps = {
+  id: string;
   userId: string;
   timesteamp: string;
   likes: LikeProps[];
   content: string;
 };
 
-type CardProps = {
+export type CardProps = {
   id: string;
   content: string;
   likes: LikeProps[];
