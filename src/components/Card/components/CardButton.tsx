@@ -1,6 +1,4 @@
-"use client";
 import React from "react";
-import { useCardButton } from "../hooks/useCardButton";
 
 type Props = {
   icon: React.ReactNode;

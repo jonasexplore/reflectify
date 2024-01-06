@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "./theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -16,7 +20,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="h-screen flex flex-col gap-4 mx-6 py-4">
+            <Navbar />
+            <main className="h-full">{children}</main>
+          </div>
+        </ThemeProvider>
+        <Toaster />
+      </body>
     </html>
   );
 }
