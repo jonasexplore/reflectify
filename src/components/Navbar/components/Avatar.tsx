@@ -3,7 +3,7 @@ import Image from "next/image";
 export const Avatar = () => {
   return (
     <div className="flex gap-2 items-center">
-      <span>Jonas Brito</span>
+      <span className="font-semibold">Jonas Brito</span>
       <Image
         className="rounded-full"
         width={32}
