@@ -5,14 +5,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/Card";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { useStoreBoard } from "@/app/store";
-import { useRef } from "react";
+import { DetailedHTMLProps, HTMLAttributes, useRef } from "react";
 
-type Props = {
+type Props = Omit<
+  DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
+  "id"
+> & {
   id: UniqueIdentifier;
-  wrapperStyle?: any;
 };
 
-export const SortableItem = ({ id, wrapperStyle }: Props) => {
+export const SortableItem = ({ id, className, ...props }: Props) => {
   const divElement = useRef<any>();
   const { cards } = useStoreBoard();
   const {
@@ -22,46 +24,31 @@ export const SortableItem = ({ id, wrapperStyle }: Props) => {
     transform,
     transition,
     isDragging,
-    active,
-    over,
   } = useSortable({ id });
 
   const card = cards.find((item) => item.id === id);
 
+  const style = {
+    transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
+    transition,
+  };
+
   return (
     <div
+      {...props}
       ref={(element) => {
         setNodeRef(element);
         divElement.current = element;
       }}
-      style={
-        {
-          ...wrapperStyle,
-          transform: CSS.Translate.toString(
-            transform && {
-              ...transform,
-              scaleY: 1,
-            }
-          ),
-          height: divElement.current?.clientHeight,
-          transition: [transition, wrapperStyle?.transition]
-            .filter(Boolean)
-            .join(", "),
-          "--translate-x": transform
-            ? `${Math.round(transform.x)}px`
-            : undefined,
-          "--translate-y": transform
-            ? `${Math.round(transform.y)}px`
-            : undefined,
-          "--scale-x": transform?.scaleX ? `${transform.scaleX}` : undefined,
-          "--scale-y": transform?.scaleY ? `${transform.scaleY}` : undefined,
-        } as React.CSSProperties
-      }
-      className={isDragging ? "opacity-50" : "cursor-grab"}
-      {...attributes}
-      {...listeners}
+      style={{
+        ...style,
+        ...props.style,
+        opacity: isDragging ? "0.5" : undefined,
+      }}
     >
-      <Card>{card?.content}</Card>
+      <Card attributes={attributes} listeners={listeners} cardInfo={card}>
+        {card?.content}
+      </Card>
     </div>
   );
 };
