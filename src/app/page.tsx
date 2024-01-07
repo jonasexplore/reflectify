@@ -1,6 +1,6 @@
 "use client";
 
-import { Board } from "@/components/Board";
+import { Board } from "./components/board";
 
 export default function Home() {
   return <Board />;

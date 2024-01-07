@@ -1,26 +1,28 @@
 "use client";
 
-import { useStoreBoard } from "@/app/store";
-import { useToast } from "@/components/ui/use-toast";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { unstable_batchedUpdates } from "react-dom";
 import {
+  closestCenter,
   CollisionDetection,
+  defaultDropAnimationSideEffects,
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
+  getFirstCollision,
   KeyboardSensor,
   MouseSensor,
-  TouchSensor,
-  UniqueIdentifier,
-  closestCenter,
-  getFirstCollision,
   pointerWithin,
   rectIntersection,
+  TouchSensor,
+  UniqueIdentifier,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { unstable_batchedUpdates } from "react-dom";
+
+import { ItemsProps, useStoreBoard } from "@/app/store";
+import { useToast } from "@/components/ui/use-toast";
 
 export const TRASH_ID = "void";
 const PLACEHOLDER_ID = "placeholder";
@@ -35,18 +37,22 @@ type HandleDragItemProps = {
 
 export const useBoard = () => {
   const { toast } = useToast();
-  const { items, setItems, containers, setContainers } = useStoreBoard();
+  const {
+    items,
+    setItems,
+    containers,
+    setContainers,
+    containersIds,
+    setContainersIds,
+  } = useStoreBoard();
 
-  const lastOverId = useRef<UniqueIdentifier | null>(null);
+  const addedFirstColumn = useRef(false);
   const recentlyMovedToNewContainer = useRef(false);
+  const lastOverId = useRef<UniqueIdentifier | null>(null);
+
+  const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [clonedItems, setClonedItems] = useState<Record<
-    string,
-    UniqueIdentifier[]
-  > | null>(null);
-  const [containersNames, setContainersNames] = useState(
-    Object.keys(items) as UniqueIdentifier[]
-  );
+  const [clonedItems, setClonedItems] = useState<ItemsProps | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -80,12 +86,9 @@ export const useBoard = () => {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (active.id in items && over?.id) {
-      setContainersNames((containersNames) => {
-        const activeIndex = containersNames.indexOf(active.id);
-        const overIndex = containersNames.indexOf(over.id);
-
-        return arrayMove(containersNames, activeIndex, overIndex);
-      });
+      const activeIndex = containersIds.indexOf(active.id);
+      const overIndex = containersIds.indexOf(over.id);
+      setContainersIds(arrayMove(containersIds, activeIndex, overIndex));
     }
 
     const activeContainer = findContainer(active.id);
@@ -117,10 +120,7 @@ export const useBoard = () => {
       const newContainerId = window.crypto.randomUUID();
 
       unstable_batchedUpdates(() => {
-        setContainersNames((containersNames) => [
-          ...containersNames,
-          newContainerId,
-        ]);
+        setContainersIds([...containersIds, newContainerId]);
         setItems({
           ...items,
           [activeContainer]: items[activeContainer].filter(
@@ -283,10 +283,7 @@ export const useBoard = () => {
     const newContainerId = window.crypto.randomUUID();
 
     unstable_batchedUpdates(() => {
-      setContainersNames((containersNames) => [
-        ...containersNames,
-        newContainerId,
-      ]);
+      setContainersIds([...containersIds, newContainerId]);
       setItems({ ...items, [newContainerId]: [] });
       setContainers([
         ...containers,
@@ -299,31 +296,50 @@ export const useBoard = () => {
     });
   }
 
-  function handlerDelete(containerId: string) {
-    setContainersNames((containers) =>
-      containers.filter((id) => id !== containerId)
-    );
-    setContainers(containers.filter((item) => item.id !== containerId));
-    delete items[containerId];
-    setItems(items);
-  }
+  const dropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: "0.5",
+        },
+      },
+    }),
+  };
 
   useEffect(() => {
+    if (addedFirstColumn.current) {
+      setLoading(false);
+      return;
+    }
+
+    const id = window.crypto.randomUUID();
+
+    setContainersIds([id]);
+    setItems({ ...items, [id]: [] });
+    setContainers([...containers, { color: "red", id, name: "Coluna 1" }]);
+
+    addedFirstColumn.current = true;
+    setLoading(true);
+  }, [containers, items, setContainers, setContainersIds, setItems]);
+
+  useEffect(() => {
+    setContainersIds(Object.keys(items));
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });
-  }, [items]);
+  }, [items, setContainersIds]);
 
   return {
     items,
     sensors,
+    loading,
     activeId,
     onDragCancel,
-    handlerDelete,
+    dropAnimation,
     handleDragEnd,
     handleDragOver,
     PLACEHOLDER_ID,
-    containersNames,
+    containersIds,
     handleDragStart,
     handleAddColumn,
     collisionDetectionStrategy,

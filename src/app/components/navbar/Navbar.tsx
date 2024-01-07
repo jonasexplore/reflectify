@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { ModeToggle } from "../Toggle";
+
+import logo from "../../../../public/logo.svg";
+import { ModeToggle } from "../toggle";
+
 import { Avatar } from "./components/Avatar";
-import logo from "../../../public/logo.svg";
 
 export const Navbar = () => {
   return (

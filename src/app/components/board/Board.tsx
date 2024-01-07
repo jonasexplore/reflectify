@@ -1,34 +1,34 @@
-import {
-  DndContext,
-  DragOverlay,
-  MeasuringStrategy,
-  defaultDropAnimationSideEffects,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { Container } from "./components/Container";
+import { DndContext, DragOverlay, MeasuringStrategy } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import {
+  horizontalListSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
+
 import { useBoard } from "./hooks/useBoard";
-import { SortableItem } from "./components/ContainerItem";
+import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
 
 export const Board = () => {
   const {
     items,
     sensors,
+    loading,
     activeId,
     onDragCancel,
-    handlerDelete,
     handleDragEnd,
+    dropAnimation,
     handleDragOver,
     PLACEHOLDER_ID,
-    containersNames,
+    containersIds,
     handleDragStart,
     handleAddColumn,
     collisionDetectionStrategy,
   } = useBoard();
+
+  if (loading) {
+    return <BoardLoaderSkeleton />;
+  }
 
   return (
     <DndContext
@@ -43,15 +43,14 @@ export const Board = () => {
     >
       <div className="h-full flex gap-1">
         <SortableContext
-          items={[...containersNames, PLACEHOLDER_ID]}
+          items={[...containersIds, PLACEHOLDER_ID]}
           strategy={horizontalListSortingStrategy}
         >
-          {containersNames.map((container) => (
+          {containersIds.map((container) => (
             <Container
-              handlerDelete={handlerDelete}
               key={container}
               id={container}
-              items={items[container]}
+              containers={items[container]}
             />
           ))}
           <div className="flex items-center border border-dashed border-slate-600 rounded-xl mx-2">
@@ -64,24 +63,9 @@ export const Board = () => {
           </div>
         </SortableContext>
       </div>
-      <DragOverlay
-        adjustScale={false}
-        dropAnimation={{
-          sideEffects: defaultDropAnimationSideEffects({
-            styles: {
-              active: {
-                opacity: "0.5",
-              },
-            },
-          }),
-        }}
-      >
-        {activeId && containersNames.includes(activeId) ? (
-          <Container
-            id={activeId}
-            items={items[activeId]}
-            handlerDelete={handlerDelete}
-          />
+      <DragOverlay adjustScale={false} dropAnimation={dropAnimation}>
+        {activeId && containersIds.includes(activeId) ? (
+          <Container id={activeId} containers={items[activeId]} />
         ) : (
           activeId && <SortableItem id={activeId} />
         )}
