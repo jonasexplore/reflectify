@@ -323,7 +323,6 @@ export const useBoard = () => {
   }, [containers, items, setContainers, setContainersIds, setItems]);
 
   useEffect(() => {
-    setContainersIds(Object.keys(items));
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });

@@ -14,16 +14,8 @@ type Props = {
 
 export const useContainer = ({ id, containers }: Props) => {
   const [open, setOpen] = useState(false);
-  const {
-    items,
-    addCard,
-    setItems,
-    removeCard,
-    containers: containerState,
-    setContainers,
-    containersIds,
-    setContainersIds,
-  } = useStoreBoard();
+  const { addCard, removeCard, containersIds, removeContainer } =
+    useStoreBoard();
 
   const {
     setNodeRef,
@@ -66,10 +58,7 @@ export const useContainer = ({ id, containers }: Props) => {
       return;
     }
 
-    setContainersIds(containersIds.filter((id) => id !== containerId));
-    setContainers(containerState.filter((item) => item.id !== containerId));
-    delete items[containerId];
-    setItems(items);
+    removeContainer(containerId);
   }
 
   function handlerDeleteCard(cardId: UniqueIdentifier) {
