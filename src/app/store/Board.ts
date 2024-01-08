@@ -37,6 +37,7 @@ type StoreProps = {
   removeCard: (containerId: UniqueIdentifier, cardId: UniqueIdentifier) => void;
   containers: ContainerProps[];
   setContainers: (values: ContainerProps[]) => void;
+  removeContainer: (containerId: UniqueIdentifier) => void;
   items: ItemsProps;
   setItems: (values: ItemsProps) => void;
   containersIds: UniqueIdentifier[];
@@ -74,4 +75,15 @@ export const useStoreBoard = create<StoreProps>((set) => ({
   setItems: (value) => set({ items: value }),
   containersIds: [],
   setContainersIds: (value) => set({ containersIds: value }),
+  removeContainer: (containerId) =>
+    set((state) => {
+      const items = state.items;
+      delete items[containerId];
+
+      return {
+        items,
+        containers: state.containers.filter((item) => item.id !== containerId),
+        containersIds: state.containersIds.filter((id) => id !== containerId),
+      };
+    }),
 }));
