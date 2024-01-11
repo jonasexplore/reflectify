@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -14,19 +14,21 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const formSchema = z.object({
-  email: z.string().email("O email digitado deve ser válido"),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
-});
-
 export const AuthForm = () => {
   const router = useRouter();
 
   const [lastStep, setLastStep] = useState(false);
+
+  const formSchema = z.object({
+    email: z
+      .string()
+      .email("Você deve informar um email válido para prosseguir"),
+    password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    mode: "onChange",
-    reValidateMode: "onChange",
+
     defaultValues: {
       email: "",
       password: "",
@@ -47,7 +49,10 @@ export const AuthForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="my-4 space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="max-w-sm w-full my-4 space-y-4"
+      >
         <div hidden={lastStep}>
           <FormField
             control={form.control}
@@ -89,28 +94,40 @@ export const AuthForm = () => {
 
         <div className="flex gap-2">
           {lastStep && (
-            <Button onClick={() => setLastStep(false)} className="bg-container">
+            <Button
+              type="button"
+              onClick={() => setLastStep(false)}
+              className="bg-container"
+            >
               Voltar
             </Button>
           )}
           <Button
+            type="submit"
             className="w-full"
             onClick={() => {
               if (!lastStep) {
-                const { invalid } = form.getFieldState("email");
+                const { invalid, isTouched } = form.getFieldState("email");
 
-                if (invalid) {
-                  return;
-                }
+                if (invalid || !isTouched) return;
 
                 setLastStep(true);
               }
             }}
-            {...(lastStep && { type: "submit" })}
           >
             {lastStep ? "Criar conta com email" : "Continuar"}
           </Button>
         </div>
+
+        {lastStep && (
+          <div className="text-sm text-muted-foreground text-center">
+            <span>
+              Ao clicar em criar conta, você concorda com os nossos{" "}
+              <span className="underline">Termos de Serviço</span> e{" "}
+              <span className="underline">Política de Privacidade</span>.
+            </span>
+          </div>
+        )}
       </form>
     </Form>
   );
