@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 
 import { Toaster } from "@/components/ui/toaster";
 
-import { Navbar } from "./components/navbar";
 import { ThemeProvider } from "./theme-provider";
 
 import "./globals.css";
@@ -29,10 +28,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="h-screen flex flex-col gap-4 mx-6 py-4">
-            <Navbar />
-            <main className="h-full">{children}</main>
-          </div>
+          <main className="h-full">{children}</main>
         </ThemeProvider>
         <Toaster />
       </body>

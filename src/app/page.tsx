@@ -1,7 +1,14 @@
 "use client";
 
-import { Board } from "./components/board";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return <Board />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/auth");
+  }, [router]);
+
+  return <div>Tela inicial</div>;
 }
