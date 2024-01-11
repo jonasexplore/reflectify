@@ -42,6 +42,7 @@ type StoreProps = {
   setItems: (values: ItemsProps) => void;
   containersIds: UniqueIdentifier[];
   setContainersIds: (values: UniqueIdentifier[]) => void;
+  reset: () => void;
 };
 
 export const useStoreBoard = create<StoreProps>((set) => ({
@@ -85,5 +86,12 @@ export const useStoreBoard = create<StoreProps>((set) => ({
         containers: state.containers.filter((item) => item.id !== containerId),
         containersIds: state.containersIds.filter((id) => id !== containerId),
       };
+    }),
+  reset: () =>
+    set({
+      items: { "1": [] },
+      cards: [],
+      containers: [{ color: "transparent", id: "1", name: "Coluna 1" }],
+      containersIds: ["1"],
     }),
 }));
