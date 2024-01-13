@@ -1,3 +1,4 @@
+import { MousePointer2 } from "lucide-react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -29,8 +30,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="h-full">{children}</main>
+
+          <Toaster />
+          <template id="cursor">
+            <MousePointer2 className="w-4 h-4" />
+          </template>
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   );

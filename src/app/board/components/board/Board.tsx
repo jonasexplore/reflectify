@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { DndContext, DragOverlay, MeasuringStrategy } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
@@ -5,9 +8,15 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
+import { io } from "socket.io-client";
+
+import { useStoreBoard } from "@/app/store";
 
 import { useBoard } from "./hooks/useBoard";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
+import { getOrCreateCursorFor } from "./utils";
+
+const PORT = Number(process.env.SOCKET_PORT ?? 3005);
 
 export const Board = () => {
   const {
@@ -25,6 +34,45 @@ export const Board = () => {
     handleAddColumn,
     collisionDetectionStrategy,
   } = useBoard();
+  const { reset } = useStoreBoard();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => reset(), []);
+
+  useEffect(() => {
+    const socket = io(`:${PORT}`, {
+      path: "/api/socket",
+      addTrailingSlash: false,
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected");
+    });
+
+    socket.on("connect_error", async (err) => {
+      console.log(`connect_error due to ${err.message}`);
+      // await fetch("/api/socket");
+    });
+
+    socket.on("receive", (message) => {
+      const cursor = getOrCreateCursorFor(message);
+
+      if (!cursor) {
+        return;
+      }
+
+      cursor.style.transform = `translate(${message.x}px, ${message.y}px)`;
+    });
+
+    document.body.onmousemove = (event) => {
+      const message = { x: event.clientX, y: event.clientY };
+      socket.emit("message", message);
+    };
+  }, []);
 
   if (loading) {
     return <BoardLoaderSkeleton />;
