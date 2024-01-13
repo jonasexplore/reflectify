@@ -1,9 +1,10 @@
-import { MousePointer2 } from "lucide-react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { Toaster } from "@/components/ui/toaster";
 
+import RootLoading from "./loading";
 import { ThemeProvider } from "./theme-provider";
 
 import "./globals.css";
@@ -29,12 +30,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="h-full">{children}</main>
-
+          <Suspense fallback={<RootLoading />}>
+            <main className="overflow-hidden h-full">{children}</main>
+          </Suspense>
           <Toaster />
-          <template id="cursor">
-            <MousePointer2 className="w-4 h-4" />
-          </template>
         </ThemeProvider>
       </body>
     </html>
