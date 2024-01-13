@@ -9,11 +9,9 @@ export default function BoardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
-      <div className="h-screen flex flex-col gap-4 mx-6 py-4">
-        <Navbar />
-        <Suspense fallback={<Loading />}>{children}</Suspense>
-      </div>
-    </main>
+    <div className="h-screen flex flex-col gap-4 mx-6 py-4">
+      <Navbar />
+      <Suspense fallback={<Loading />}>{children}</Suspense>
+    </div>
   );
 }
