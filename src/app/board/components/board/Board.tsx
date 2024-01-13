@@ -8,17 +8,16 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
-import { io } from "socket.io-client";
+import { MousePointer2 } from "lucide-react";
 
 import { useStoreBoard } from "@/app/store";
 
 import { useBoard } from "./hooks/useBoard";
+import { useSocketClient } from "./hooks/useSocketClient";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
-import { getOrCreateCursorFor } from "./utils";
-
-const PORT = Number(process.env.SOCKET_PORT ?? 3005);
 
 export const Board = () => {
+  useSocketClient();
   const {
     items,
     sensors,
@@ -39,41 +38,6 @@ export const Board = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => reset(), []);
 
-  useEffect(() => {
-    const socket = io(`:${PORT}`, {
-      path: "/api/socket",
-      addTrailingSlash: false,
-    });
-
-    socket.on("connect", () => {
-      console.log("Connected");
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected");
-    });
-
-    socket.on("connect_error", async (err) => {
-      console.log(`connect_error due to ${err.message}`);
-      // await fetch("/api/socket");
-    });
-
-    socket.on("receive", (message) => {
-      const cursor = getOrCreateCursorFor(message);
-
-      if (!cursor) {
-        return;
-      }
-
-      cursor.style.transform = `translate(${message.x}px, ${message.y}px)`;
-    });
-
-    document.body.onmousemove = (event) => {
-      const message = { x: event.clientX, y: event.clientY };
-      socket.emit("message", message);
-    };
-  }, []);
-
   if (loading) {
     return <BoardLoaderSkeleton />;
   }
@@ -89,7 +53,7 @@ export const Board = () => {
       collisionDetection={collisionDetectionStrategy}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
     >
-      <div className="h-full flex gap-1">
+      <div id="board" className="relative h-full flex gap-1">
         <SortableContext
           items={[...containersIds, PLACEHOLDER_ID]}
           strategy={horizontalListSortingStrategy}
@@ -118,6 +82,13 @@ export const Board = () => {
           activeId && <SortableItem id={activeId} />
         )}
       </DragOverlay>
+
+      <template id="cursor">
+        <div className="flex flex-col items-center">
+          <MousePointer2 className="w-4 h-4" />
+          <span className="text-[12px] font-bold"></span>
+        </div>
+      </template>
     </DndContext>
   );
 };
