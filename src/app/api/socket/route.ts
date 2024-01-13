@@ -1,4 +1,5 @@
 import { NextApiRequest } from "next";
+import { NextResponse } from "next/server";
 import { Server, Socket } from "socket.io";
 
 import { NextApiResponseWithSocket } from "@/app/types/http";
@@ -17,12 +18,16 @@ export async function GET(
   res: NextApiResponseWithSocket
 ) {
   if (res?.socket?.server?.io) {
-    res.status(200).json({
-      success: true,
-      message: "Socket is already running",
-      socket: `:${PORT}`,
-    });
-    return;
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Socket is already running",
+        socket: `:${PORT}`,
+      },
+      {
+        status: 200,
+      }
+    );
   }
 
   console.log("Starting Socket.IO server on port:", PORT);
@@ -61,10 +66,16 @@ export async function GET(
     });
   });
 
-  res.socket.server.io = io;
-  res.status(201).json({
-    success: true,
-    message: "Socket is started",
-    socket: `:${PORT}`,
-  });
+  Object.assign(res, { socket: { server: { io } } });
+
+  return NextResponse.json(
+    {
+      success: true,
+      message: "Socket is started",
+      socket: `:${PORT}`,
+    },
+    {
+      status: 201,
+    }
+  );
 }
