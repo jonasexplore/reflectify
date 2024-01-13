@@ -37,7 +37,8 @@ export const AuthForm = () => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    router.replace("/board");
+    const boardId = window.crypto.randomUUID();
+    router.push(`/board/${boardId}`);
   }
 
   useEffect(() => {

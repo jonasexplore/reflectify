@@ -37,7 +37,14 @@ export default function Auth() {
         <div className="h-screen border-l flex flex-col items-center justify-center">
           <div className="w-full px-6 py-4 flex gap-2 justify-end">
             <ModeToggle />
-            <Button onClick={() => router.push("/board")}>Login</Button>
+            <Button
+              onClick={() => {
+                const boardId = window.crypto.randomUUID();
+                router.push(`/board/${boardId}`);
+              }}
+            >
+              Login
+            </Button>
           </div>
           <div className=" flex-1 flex flex-col justify-center gap-4 space-y-2">
             <div className="flex flex-col">
@@ -52,13 +59,6 @@ export default function Auth() {
             <div className="flex flex-col gap-2">
               <AuthForm />
             </div>
-
-            {/* <Separator decorative content="teste" />
-
-            <Button className="flex gap-2">
-              <GitHubLogoIcon className="w-4 h-4" />
-              <strong>GitHub</strong>
-            </Button> */}
           </div>
         </div>
       </div>
