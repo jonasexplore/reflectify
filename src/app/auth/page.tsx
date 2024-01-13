@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 import logo from "../../../public/logo.svg";
-import { ModeToggle } from "../board/components/toggle";
+import { ModeToggle } from "../boards/components/toggle";
 
 import { AuthForm } from "./components/Form";
 
