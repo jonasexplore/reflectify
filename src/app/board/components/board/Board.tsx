@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { MousePointer2 } from "lucide-react";
+import { useParams } from "next/navigation";
 
 import { useStoreBoard } from "@/app/store";
 
@@ -17,7 +18,10 @@ import { useSocketClient } from "./hooks/useSocketClient";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
 
 export const Board = () => {
-  useSocketClient();
+  const { id } = useParams();
+  const { loading: loadingSocketClient } = useSocketClient({
+    roomId: id as string,
+  });
   const {
     items,
     sensors,
@@ -38,7 +42,7 @@ export const Board = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => reset(), []);
 
-  if (loading) {
+  if (loading || loadingSocketClient) {
     return <BoardLoaderSkeleton />;
   }
 

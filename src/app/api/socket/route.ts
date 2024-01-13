@@ -8,7 +8,10 @@ const PORT = Number(process.env.SOCKET_PORT ?? 3005);
 
 export type ClientProps = {
   id: string;
+  roomId: string;
   sender?: string;
+  x?: string;
+  y?: string;
 };
 
 const clients = new Map<Socket, ClientProps>(new Set());
@@ -39,11 +42,16 @@ export async function GET(
   }).listen(PORT);
 
   io.on("connect", (socket) => {
-    console.log("socket connect", socket.id);
+    const roomId = socket.handshake.query.roomId as string;
+    console.log("socket connect", socket.id, "at", roomId);
     socket.broadcast.emit("welcome", `Welcome ${socket.id}`);
 
-    const metadata = { id: socket.id };
+    const metadata = {
+      id: socket.id,
+      roomId,
+    };
 
+    socket.join(roomId);
     clients.set(socket, metadata);
 
     socket.on("message", (message: ClientProps) => {
@@ -54,15 +62,22 @@ export async function GET(
       }
 
       message.sender = metadata?.id;
+      message.roomId = metadata.roomId;
 
       [...Array.from(clients.keys())].forEach((client) => {
-        client.emit("receive", message);
+        client.to(message.roomId).emit("receive", message);
       });
     });
 
     socket.on("disconnect", async () => {
+      const client = clients.get(socket);
+
+      if (client) {
+        socket.to(client.roomId).emit("disconnect:player", client?.id);
+      }
+
+      console.log("socket disconnect", socket.id);
       clients.delete(socket);
-      console.log("socket disconnect");
     });
   });
 
