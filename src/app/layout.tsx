@@ -4,8 +4,10 @@ import { Inter } from "next/font/google";
 
 import { Toaster } from "@/components/ui/toaster";
 
+import { ThemeProvider } from "../components/ui/theme-provider";
+
+import { AuthProvider } from "./auth/components";
 import RootLoading from "./loading";
-import { ThemeProvider } from "./theme-provider";
 
 import "./globals.css";
 
@@ -30,10 +32,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Suspense fallback={<RootLoading />}>
-            <main className="overflow-hidden h-full">{children}</main>
-          </Suspense>
-          <Toaster />
+          <AuthProvider>
+            <Suspense fallback={<RootLoading />}>
+              <main className="h-full">{children}</main>
+            </Suspense>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
