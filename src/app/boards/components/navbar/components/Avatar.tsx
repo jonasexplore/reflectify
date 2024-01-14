@@ -1,7 +1,10 @@
+"use client";
+
 import { ExitIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,28 +14,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const Avatar = () => {
-  const router = useRouter();
+export const Profile = () => {
+  const { data: session } = useSession();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex gap-2 items-center">
-        <span className="font-semibold">Jonas Brito</span>
-        <Image
-          className="rounded-full"
-          width={32}
-          height={32}
-          alt="profile"
-          src="https://avatars.githubusercontent.com/u/53955982?v=4"
-        />
+        <span className="font-semibold">{session?.user?.name}</span>
+        <Avatar>
+          <AvatarImage src={session?.user?.image ?? undefined} />
+          <AvatarFallback>{session?.user?.name?.[0] ?? "A"}</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => {
-            router.push("/auth");
-          }}
+          onClick={() => signOut({ callbackUrl: "http://localhost:3000/" })}
           className="flex gap-2 cursor-pointer"
         >
           <ExitIcon className="w-4 h-4" />
