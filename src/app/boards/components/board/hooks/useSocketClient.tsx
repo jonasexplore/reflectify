@@ -72,6 +72,8 @@ export const useSocketClient = ({ roomId }: SocketClientProps) => {
       document.body.onmousemove = null;
       socket.disconnect();
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { loading };
