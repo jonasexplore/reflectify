@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { User } from "next-auth";
 import { BuiltInProviderType } from "next-auth/providers/index";
 import {
   ClientSafeProvider,
@@ -11,6 +12,7 @@ import {
 } from "next-auth/react";
 
 import { ModeToggle } from "@/app/boards/components/toggle";
+import { prisma } from "@/lib/prisma";
 
 import logo from "../../../../public/logo.svg";
 
@@ -24,8 +26,34 @@ type AuthContentProps = {
 export const AuthContent = ({ providers }: AuthContentProps) => {
   const { data: session } = useSession();
 
+  const handleUser = async ({ email, image, name }: User) => {
+    if (!email) {
+      return;
+    }
+
+    const exists = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (exists) {
+      return;
+    }
+
+    await prisma.user.create({
+      data: {
+        id: window.crypto.randomUUID(),
+        name,
+        email,
+        image_url: image,
+      },
+    });
+  };
+
   if (session?.user) {
     console.log(session?.user);
+    handleUser(session.user as User);
     redirect("/boards");
   }
   return (
