@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mongodb"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -8,17 +8,20 @@ generator client {
 }
 
 model User {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  email     String
-  name      String
-  image_url String
+  id        String  @id
+  email     String  @unique
+  name      String?
+  image_url String?
   Board     Board[]
 
   @@map("users")
 }
 
 model Board {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  userId String @db.ObjectId
-  user   User   @relation(fields: [userId], references: [id])
+  id      String   @id
+  userId  String
+  name    String
+  created DateTime @default(now())
+  updated DateTime @updatedAt
+  user    User     @relation(fields: [userId], references: [id])
 }
