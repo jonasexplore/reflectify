@@ -24,4 +24,17 @@ model Board {
   created DateTime @default(now())
   updated DateTime @updatedAt
   user    User     @relation(fields: [userId], references: [id])
+  Column  Column[]
+
+  @@map("boards")
+}
+
+model Column {
+  id       String @id
+  name     String
+  boardId  String
+  position Int
+  board    Board  @relation(fields: [boardId], references: [id])
+
+  @@map("columns")
 }
