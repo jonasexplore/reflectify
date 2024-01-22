@@ -18,7 +18,11 @@ function Board() {
 
   useEffect(() => setIsClient(true), []);
 
-  return isClient ? (
+  if (!isClient) {
+    return <Loading />;
+  }
+
+  return (
     <div className="h-full">
       <h2 className="font-bold text-lg mb-6">Todos os meus quadros:</h2>
 
@@ -58,8 +62,6 @@ function Board() {
         </div>
       </div>
     </div>
-  ) : (
-    <Loading />
   );
 }
 
