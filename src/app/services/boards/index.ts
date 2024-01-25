@@ -9,3 +9,13 @@ export const fetchBoard = async (userId: string) => {
     return [];
   }
 };
+
+export const getBoard = async (boardId: string) => {
+  try {
+    const output = await api.get(`/boards/${boardId}`);
+
+    return output.data;
+  } catch (error) {
+    return {};
+  }
+};
