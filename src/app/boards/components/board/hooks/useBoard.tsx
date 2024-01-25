@@ -20,7 +20,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { nanoid } from "nanoid";
+import { useParams, useRouter } from "next/navigation";
 
+import { getBoard } from "@/app/services/boards";
 import { ItemsProps, useStoreBoard } from "@/app/store";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -40,6 +43,7 @@ export const useBoard = () => {
   const {
     items,
     setItems,
+    setCards,
     containers,
     setContainers,
     containersIds,
@@ -53,6 +57,8 @@ export const useBoard = () => {
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [clonedItems, setClonedItems] = useState<ItemsProps | null>(null);
+  const params = useParams();
+  const router = useRouter();
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -117,7 +123,7 @@ export const useBoard = () => {
     }
 
     if (overId === PLACEHOLDER_ID) {
-      const newContainerId = window.crypto.randomUUID();
+      const newContainerId = nanoid();
 
       unstable_batchedUpdates(() => {
         setContainersIds([...containersIds, newContainerId]);
@@ -280,7 +286,7 @@ export const useBoard = () => {
       return;
     }
 
-    const newContainerId = window.crypto.randomUUID();
+    const newContainerId = nanoid();
 
     unstable_batchedUpdates(() => {
       setContainersIds([...containersIds, newContainerId]);
@@ -306,27 +312,80 @@ export const useBoard = () => {
     }),
   };
 
-  useEffect(() => {
-    if (addedFirstColumn.current) {
+  const handleGetBoard = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const board = await getBoard(params.id as string);
+
+      setContainersIds(board.Column.map((column: any) => column.id));
+      setItems(
+        Object.assign(
+          items,
+          board.Column.reduce(
+            (acc: any, curr: any) =>
+              Object.assign(acc, {
+                [curr.id]: curr.Card.map((card: any) => card.id),
+              }),
+            {}
+          )
+        )
+      );
+      setCards(
+        board.Column.reduce((acc: any, curr: any) => acc.concat(curr.Card), [])
+      );
+      setContainers([
+        ...containers,
+        ...board.Column.map((column: any) => ({
+          color: "red",
+          id: column.id,
+          name: column.name,
+        })),
+      ]);
+    } catch (error) {
+      toast({
+        title: "Quadro não encontrato",
+        description: "O quadro que você tentou acessar não existe.",
+      });
+
+      router.push("/boards");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const id = window.crypto.randomUUID();
-
-    setContainersIds([id]);
-    setItems({ ...items, [id]: [] });
-    setContainers([...containers, { color: "red", id, name: "Coluna 1" }]);
-
-    addedFirstColumn.current = true;
-    setLoading(true);
-  }, [containers, items, setContainers, setContainersIds, setItems]);
+  }, [
+    toast,
+    items,
+    router,
+    setItems,
+    setCards,
+    params.id,
+    containers,
+    setContainers,
+    setContainersIds,
+  ]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });
-  }, [items, setContainersIds]);
+
+    if (addedFirstColumn.current) {
+      setLoading(false);
+      return;
+    }
+
+    handleGetBoard();
+
+    addedFirstColumn.current = true;
+    setLoading(true);
+  }, [
+    items,
+    setItems,
+    containers,
+    setContainers,
+    handleGetBoard,
+    setContainersIds,
+  ]);
 
   return {
     items,
