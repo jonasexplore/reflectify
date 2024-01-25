@@ -41,8 +41,11 @@ export const Board = () => {
   } = useBoard();
   const { reset } = useStoreBoard();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => reset(), []);
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, []);
 
   if (loading || loadingSocketClient) {
     return <BoardLoaderSkeleton />;
