@@ -8,11 +8,14 @@ generator client {
 }
 
 model User {
-  id        String  @id
-  email     String  @unique
-  name      String?
-  image_url String?
-  Board     Board[]
+  id          String        @id
+  email       String        @unique
+  name        String?
+  image_url   String?
+  Board       Board[]
+  Comment     Comment[]
+  CardLike    CardLike[]
+  CommentLike CommentLike[]
 
   @@map("users")
 }
@@ -35,6 +38,53 @@ model Column {
   boardId  String
   position Int
   board    Board  @relation(fields: [boardId], references: [id])
+  Card     Card[]
 
   @@map("columns")
+}
+
+model Card {
+  id       String     @id
+  content  String
+  columnId String
+  column   Column     @relation(fields: [columnId], references: [id])
+  Like     CardLike[]
+  Comment  Comment[]
+
+  @@map("cards")
+}
+
+model CardLike {
+  id        String   @id
+  timestamp DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id])
+
+  @@map("cards_likes")
+}
+
+model Comment {
+  id          String        @id
+  content     String
+  timestamp   DateTime      @default(now())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  cardId      String
+  card        Card          @relation(fields: [cardId], references: [id])
+  CommentLike CommentLike[]
+
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id
+  timestamp DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id])
+
+  @@map("comments_likes")
 }
