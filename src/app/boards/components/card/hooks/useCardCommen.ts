@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { nanoid } from "nanoid";
 
 import { useStoreBoard } from "@/app/store";
 
@@ -25,7 +26,7 @@ export const useCardComment = ({ id }: Props) => {
             ...card.comments,
             {
               content: comment,
-              id: window.crypto.randomUUID(),
+              id: nanoid(),
               likes: [],
               timesteamp: new Date().toISOString(),
               userId: window.crypto.randomUUID(),

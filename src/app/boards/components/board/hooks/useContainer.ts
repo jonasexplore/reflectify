@@ -2,6 +2,7 @@ import { useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { defaultAnimateLayoutChanges, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { nanoid } from "nanoid";
 import * as z from "zod";
 
 import { useStoreBoard } from "@/app/store";
@@ -41,7 +42,7 @@ export const useContainer = ({ id, containers }: Props) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     addCard(id, {
       comments: [],
-      id: window.crypto.randomUUID(),
+      id: nanoid(),
       likes: [],
       content: values.message,
     });
