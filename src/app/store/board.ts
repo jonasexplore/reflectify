@@ -89,9 +89,9 @@ export const useStoreBoard = create<StoreProps>((set) => ({
     }),
   reset: () =>
     set({
-      items: { "1": [] },
+      items: {},
       cards: [],
-      containers: [{ color: "transparent", id: "1", name: "Coluna 1" }],
-      containersIds: ["1"],
+      containers: [],
+      containersIds: [],
     }),
 }));
