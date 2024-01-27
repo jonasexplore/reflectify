@@ -19,3 +19,16 @@ export const getBoard = async (boardId: string) => {
     return {};
   }
 };
+
+export const createBoard = async (name: string, userId: string) => {
+  try {
+    const output = await api.post("/boards", {
+      name,
+      userId,
+    });
+
+    return output.data;
+  } catch (error) {
+    return {};
+  }
+};
