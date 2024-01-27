@@ -8,16 +8,26 @@ import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { withAuth } from "@/components/ui/with-auth";
 
 import Loading from "../loading";
-import { fetchBoard } from "../services/boards";
+import { createBoard, fetchBoard } from "../services/boards";
+
+import { BoardForm } from "./components/board/components";
 
 function Board() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [boards, setBoards] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
 
   const handleFetchBoards = useCallback(async () => {
     try {
@@ -31,6 +41,26 @@ function Board() {
       setLoading(false);
     }
   }, []);
+
+  const handleCreateBoard = useCallback(
+    async (value: { name: string; userId: string }) => {
+      try {
+        setLoading(true);
+
+        const output = await createBoard(
+          value.name,
+          "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7"
+        );
+
+        router.push(`/boards/${output.id}`);
+      } catch (error) {
+        console.error("erro", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [router]
+  );
 
   useEffect(() => setIsClient(true), []);
   useEffect(() => {
@@ -73,14 +103,26 @@ function Board() {
             </div>
           );
         })}
-        <div
+        <button
           key={"random"}
           className="rounded-lg border border-dashed border-slate-600 p-4 flex flex-col justify-center items-center"
+          onClick={() => setOpen(true)}
         >
           <span>Criar novo quadro</span>
           <PlusIcon className="w-8 h-8" />
-        </div>
+        </button>
       </div>
+
+      <Dialog onOpenChange={(value) => setOpen(value)} open={open}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo quadro</DialogTitle>
+            <DialogDescription>
+              <BoardForm onSubmit={handleCreateBoard} />
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
