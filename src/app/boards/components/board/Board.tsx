@@ -8,18 +8,17 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import { MousePointer2 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { MousePointer2, Save } from "lucide-react";
+import { useParams } from "next/navigation";
 
 import { useStoreBoard } from "@/app/store";
+import { Separator } from "@/components/ui/separator";
 
 import { useBoard } from "./hooks/useBoard";
 import { useSocketClient } from "./hooks/useSocketClient";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
 
 export const Board = () => {
-  const router = useRouter();
   const { id } = useParams();
   const { loading: loadingSocketClient } = useSocketClient({
     roomId: id as string,
@@ -29,6 +28,7 @@ export const Board = () => {
     sensors,
     loading,
     activeId,
+    boardName,
     onDragCancel,
     handleDragEnd,
     dropAnimation,
@@ -54,14 +54,26 @@ export const Board = () => {
   return (
     <div className="h-full flex flex-col gap-2">
       <div className="mb-4">
-        <button
-          className="font-bold flex gap-2 items-center"
-          onClick={() => router.push("/boards")}
-        >
-          <ArrowLeftIcon className="w-4 h-4" />
-          Voltar
-        </button>
+        <div className="flex items-center justify-between gap-3 p-2 rounded-lg">
+          <div>
+            <span className="text-xl font-bold">{boardName}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Salvo automaticamente às 21:34
+            </span>
+            <button
+              className="flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100"
+              onClick={() => {}}
+            >
+              <Save className="w-4 h-4" />
+              Salvar
+            </button>
+          </div>
+        </div>
+        <Separator />
       </div>
+
       <DndContext
         sensors={sensors}
         onDragEnd={handleDragEnd}

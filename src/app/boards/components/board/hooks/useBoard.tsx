@@ -57,6 +57,7 @@ export const useBoard = () => {
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [clonedItems, setClonedItems] = useState<ItemsProps | null>(null);
+  const [boardName, setBoardName] = useState("");
   const params = useParams();
   const router = useRouter();
 
@@ -318,6 +319,9 @@ export const useBoard = () => {
 
       const board = await getBoard(params.id as string);
 
+      setBoardName(board.name);
+
+      // create function to update all fields one once
       setContainersIds(board.Column.map((column: any) => column.id));
       setItems(
         Object.assign(
@@ -392,6 +396,7 @@ export const useBoard = () => {
     sensors,
     loading,
     activeId,
+    boardName,
     onDragCancel,
     dropAnimation,
     handleDragEnd,
