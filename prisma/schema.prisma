@@ -8,48 +8,57 @@ generator client {
 }
 
 model User {
-  id          String        @id
-  email       String        @unique
-  name        String?
-  image_url   String?
-  Board       Board[]
-  Comment     Comment[]
-  CardLike    CardLike[]
-  CommentLike CommentLike[]
+  id           String        @id
+  email        String        @unique
+  name         String?
+  image_url    String?
+  boards       Board[]
+  comments     Comment[]
+  cardLikes    CardLike[]
+  commentLikes CommentLike[]
+  cards        Card[]
 
   @@map("users")
 }
 
 model Board {
-  id      String   @id
-  userId  String
-  name    String
-  created DateTime @default(now())
-  updated DateTime @updatedAt
-  user    User     @relation(fields: [userId], references: [id])
-  Column  Column[]
+  id           String        @id
+  name         String
+  created      DateTime      @default(now())
+  updated      DateTime      @updatedAt
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  columns      BoardColumn[]
+  cards        Card[]
+  cardLikes    CardLike[]
+  comments     Comment[]
+  commentLikes CommentLike[]
 
   @@map("boards")
 }
 
-model Column {
+model BoardColumn {
   id       String @id
   name     String
-  boardId  String
   position Int
+  boardId  String
   board    Board  @relation(fields: [boardId], references: [id])
-  Card     Card[]
+  cards    Card[]
 
-  @@map("columns")
+  @@map("board_columns")
 }
 
 model Card {
-  id       String     @id
+  id       String      @id
   content  String
+  userId   String
+  user     User        @relation(fields: [userId], references: [id])
+  boardId  String
+  board    Board       @relation(fields: [boardId], references: [id])
   columnId String
-  column   Column     @relation(fields: [columnId], references: [id])
-  Like     CardLike[]
-  Comment  Comment[]
+  column   BoardColumn @relation(fields: [columnId], references: [id])
+  likes    CardLike[]
+  comments Comment[]
 
   @@map("cards")
 }
@@ -58,6 +67,8 @@ model CardLike {
   id        String   @id
   timestamp DateTime @default(now())
   userId    String
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   cardId    String
   card      Card     @relation(fields: [cardId], references: [id])
@@ -66,14 +77,16 @@ model CardLike {
 }
 
 model Comment {
-  id          String        @id
-  content     String
-  timestamp   DateTime      @default(now())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
-  cardId      String
-  card        Card          @relation(fields: [cardId], references: [id])
-  CommentLike CommentLike[]
+  id           String        @id
+  content      String
+  timestamp    DateTime      @default(now())
+  boardId      String
+  board        Board         @relation(fields: [boardId], references: [id])
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  cardId       String
+  card         Card          @relation(fields: [cardId], references: [id])
+  commentLikes CommentLike[]
 
   @@map("comments")
 }
@@ -81,6 +94,8 @@ model Comment {
 model CommentLike {
   id        String   @id
   timestamp DateTime @default(now())
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id])
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   commentId String
