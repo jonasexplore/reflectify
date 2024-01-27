@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import logo from "../../../../../public/logo.svg";
 import { ModeToggle } from "../toggle";
@@ -13,6 +14,12 @@ export const Navbar = () => {
         <span className="font-bold">reflectify</span>
       </div>
       <div className="flex gap-4">
+        <Link
+          href="/boards"
+          className="text-sm font-bold flex gap-1 items-center"
+        >
+          Meus quadros
+        </Link>
         <ModeToggle />
         <Profile />
       </div>

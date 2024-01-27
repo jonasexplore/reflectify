@@ -20,7 +20,7 @@ export const Profile = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex gap-2 items-center">
-        <span className="font-semibold">{session?.user?.name}</span>
+        <span className="text-sm font-semibold">{session?.user?.name}</span>
         <Avatar>
           <AvatarImage src={session?.user?.image ?? undefined} />
           <AvatarFallback>{session?.user?.name?.[0] ?? "A"}</AvatarFallback>
