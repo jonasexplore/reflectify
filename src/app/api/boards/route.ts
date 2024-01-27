@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -20,13 +21,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
+  const id = nanoid();
+
   await prisma.board.create({
     data: {
-      id: body.id,
+      id,
       name: body.name,
       userId: body.userId,
+      Column: {
+        create: {
+          id: nanoid(),
+          name: "Coluna 1",
+          position: 0,
+        },
+      },
     },
   });
 
-  return NextResponse.json({}, { status: 201 });
+  return NextResponse.json({ id }, { status: 201 });
 }
