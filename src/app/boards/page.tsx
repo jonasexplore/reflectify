@@ -26,6 +26,7 @@ function Board() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingButton, setLoadingButton] = useState(false);
   const [boards, setBoards] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -45,7 +46,7 @@ function Board() {
   const handleCreateBoard = useCallback(
     async (value: { name: string; userId: string }) => {
       try {
-        setLoading(true);
+        setLoadingButton(true);
 
         const output = await createBoard(
           value.name,
@@ -56,7 +57,7 @@ function Board() {
       } catch (error) {
         console.error("erro", error);
       } finally {
-        setLoading(false);
+        setLoadingButton(false);
       }
     },
     [router]
@@ -118,7 +119,10 @@ function Board() {
           <DialogHeader>
             <DialogTitle>Novo quadro</DialogTitle>
             <DialogDescription>
-              <BoardForm onSubmit={handleCreateBoard} />
+              <BoardForm
+                loadingButton={loadingButton}
+                onSubmit={handleCreateBoard}
+              />
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

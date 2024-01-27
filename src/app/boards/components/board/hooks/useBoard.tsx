@@ -322,25 +322,28 @@ export const useBoard = () => {
       setBoardName(board.name);
 
       // create function to update all fields one once
-      setContainersIds(board.Column.map((column: any) => column.id));
+      setContainersIds(board.columns.map((column: any) => column.id));
       setItems(
         Object.assign(
           items,
-          board.Column.reduce(
+          board.columns.reduce(
             (acc: any, curr: any) =>
               Object.assign(acc, {
-                [curr.id]: curr.Card.map((card: any) => card.id),
+                [curr.id]: curr.cards.map((card: any) => card.id),
               }),
             {}
           )
         )
       );
       setCards(
-        board.Column.reduce((acc: any, curr: any) => acc.concat(curr.Card), [])
+        board.columns.reduce(
+          (acc: any, curr: any) => acc.concat(curr.cards),
+          []
+        )
       );
       setContainers([
         ...containers,
-        ...board.Column.map((column: any) => ({
+        ...board.columns.map((column: any) => ({
           color: "red",
           id: column.id,
           name: column.name,
@@ -351,6 +354,8 @@ export const useBoard = () => {
         title: "Quadro não encontrato",
         description: "O quadro que você tentou acessar não existe.",
       });
+
+      console.log(error);
 
       router.push("/boards");
     } finally {

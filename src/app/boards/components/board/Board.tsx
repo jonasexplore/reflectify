@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
-import { DndContext, DragOverlay, MeasuringStrategy } from "@dnd-kit/core";
+import { useCallback, useEffect, useState } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  MeasuringStrategy,
+  UniqueIdentifier,
+} from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   horizontalListSortingStrategy,
@@ -11,7 +16,8 @@ import { PlusIcon } from "@heroicons/react/20/solid";
 import { MousePointer2, Save } from "lucide-react";
 import { useParams } from "next/navigation";
 
-import { useStoreBoard } from "@/app/store";
+import { updateBoard } from "@/app/services/boards";
+import { CardProps, ContainerProps, useStoreBoard } from "@/app/store";
 import { Separator } from "@/components/ui/separator";
 
 import { useBoard } from "./hooks/useBoard";
@@ -39,13 +45,61 @@ export const Board = () => {
     handleAddColumn,
     collisionDetectionStrategy,
   } = useBoard();
-  const { reset } = useStoreBoard();
+  const { reset, cards, containers } = useStoreBoard();
+  const [saveLoading, setSaveLoading] = useState(false);
+
+  const handleUpdate = useCallback(async () => {
+    try {
+      setSaveLoading(true);
+
+      const cardsToUpdate = Object.keys(items).reduce<
+        Array<{
+          columnId: UniqueIdentifier;
+          id: UniqueIdentifier;
+          content: string;
+          userId: string;
+        }>
+      >((acc, curr) => {
+        const item = items[curr];
+        return acc.concat(
+          item.map((id) => {
+            const card = cards.find((entry) => entry.id === id) as CardProps;
+
+            return {
+              columnId: curr,
+              id,
+              content: card?.content,
+              userId: "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7",
+            };
+          })
+        );
+      }, []);
+
+      await updateBoard(id as string, {
+        cards: cardsToUpdate,
+        columns: containersIds.map((column, index) => {
+          const container = containers.find(
+            (item) => item.id === column
+          ) as ContainerProps;
+
+          return {
+            id: container.id,
+            name: container.name,
+            position: index,
+          };
+        }),
+      });
+    } catch (error) {
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [cards, containers, containersIds, id, items]);
 
   useEffect(() => {
     return () => {
       reset();
     };
-  }, []);
+  }, [reset]);
 
   if (loading || loadingSocketClient) {
     return <BoardLoaderSkeleton />;
@@ -64,9 +118,12 @@ export const Board = () => {
             </span>
             <button
               className="flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100"
-              onClick={() => {}}
+              onClick={handleUpdate}
+              disabled={saveLoading}
             >
-              <Save className="w-4 h-4" />
+              <Save
+                className={`w-4 h-4 ${saveLoading ? "animate-pulse" : ""}`}
+              />
               Salvar
             </button>
           </div>

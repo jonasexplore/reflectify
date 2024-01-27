@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -25,9 +26,10 @@ const formSchema = z.object({
 
 type Props = {
   onSubmit: (values: any) => void;
+  loadingButton: boolean;
 };
 
-export const BoardForm = ({ onSubmit }: Props) => {
+export const BoardForm = ({ onSubmit, loadingButton }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,7 +57,10 @@ export const BoardForm = ({ onSubmit }: Props) => {
           )}
         />
         <div className="flex justify-end">
-          <Button type="submit">Criar</Button>
+          <Button type="submit" disabled={loadingButton}>
+            {loadingButton && <Loader className="w-4 h-4 animate-spin" />}
+            Criar
+          </Button>
         </div>
       </form>
     </Form>

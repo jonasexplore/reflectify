@@ -41,6 +41,7 @@ export const useContainer = ({ id, containers }: Props) => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addCard(id, {
+      columnId: id,
       comments: [],
       id: nanoid(),
       likes: [],

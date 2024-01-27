@@ -1,3 +1,5 @@
+import { UniqueIdentifier } from "@dnd-kit/core";
+
 import { api } from "../api";
 
 export const fetchBoard = async (userId: string) => {
@@ -21,11 +23,31 @@ export const getBoard = async (boardId: string) => {
 };
 
 export const createBoard = async (name: string, userId: string) => {
+  const output = await api.post("/boards", {
+    name,
+    userId,
+  });
+
+  return output.data;
+};
+
+type UpdateBoardProps = {
+  cards: Array<{
+    id: UniqueIdentifier;
+    userId: string;
+    columnId: UniqueIdentifier;
+    content: string;
+  }>;
+  columns: Array<{
+    id: string;
+    name: string;
+    position: number;
+  }>;
+};
+
+export const updateBoard = async (boardId: string, input: UpdateBoardProps) => {
   try {
-    const output = await api.post("/boards", {
-      name,
-      userId,
-    });
+    const output = await api.put(`/boards/${boardId}`, input);
 
     return output.data;
   } catch (error) {

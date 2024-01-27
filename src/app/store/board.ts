@@ -17,6 +17,7 @@ export type CommentProps = {
 
 export type CardProps = {
   id: UniqueIdentifier;
+  columnId: UniqueIdentifier;
   content: string;
   likes: LikeProps[];
   comments: CommentProps[];

@@ -29,7 +29,7 @@ export const useCardComment = ({ id }: Props) => {
               id: nanoid(),
               likes: [],
               timesteamp: new Date().toISOString(),
-              userId: window.crypto.randomUUID(),
+              userId: "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7",
             },
           ],
         };
