@@ -6,59 +6,85 @@ export async function GET(
   _: NextRequest,
   context: { params: { boardId: string } }
 ) {
-  const boardId = context.params.boardId;
+  try {
+    const boardId = context.params.boardId;
 
-  if (!boardId) {
-    return NextResponse.json({}, { status: 404 });
-  }
+    if (!boardId) {
+      return NextResponse.json({}, { status: 404 });
+    }
 
-  const board = await prisma.board.findUnique({
-    where: { id: boardId },
-    include: {
-      Column: {
-        include: {
-          Card: {
-            include: {
-              Like: true,
-              Comment: true,
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+      include: {
+        columns: {
+          include: {
+            cards: {
+              include: {
+                likes: true,
+                comments: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!board) {
-    return NextResponse.json({}, { status: 404 });
+    if (!board) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    return NextResponse.json(board, { status: 200 });
+  } catch (error) {
+    console.log({ error });
   }
-
-  return NextResponse.json(board, { status: 200 });
 }
 
 export async function PUT(
   request: NextRequest,
   context: { params: { boardId: string } }
 ) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
 
-  await prisma.board.update({
-    data: {
-      name: body.name,
-      Column: {
-        deleteMany: {
-          boardId: context.params.boardId,
-        },
-        create: body.columns.map((column: any) => ({
-          id: column.id,
-          name: column.name,
-          position: column.position,
-        })),
-      },
-    },
-    where: {
-      id: context.params.boardId,
-    },
-  });
+    const { columns, cards } = body;
 
-  return NextResponse.json({}, { status: 204 });
+    const { boardId } = context.params;
+
+    await prisma.card.deleteMany({ where: { boardId } });
+    await prisma.boardColumn.deleteMany({ where: { boardId } });
+    await Promise.all(
+      columns.map((column: any) =>
+        prisma.boardColumn.create({
+          data: {
+            boardId,
+            id: column.id,
+            name: column.name,
+            position: column.position,
+          },
+        })
+      )
+    );
+    await Promise.all(
+      cards.map((card: any) =>
+        prisma.card.create({
+          data: {
+            boardId,
+            id: card.id,
+            userId: card.userId,
+            columnId: card.columnId,
+            content: card.content,
+          },
+        })
+      )
+    );
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.log(error);
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }
