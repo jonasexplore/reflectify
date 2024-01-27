@@ -19,24 +19,33 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
 
-  const id = nanoid();
+    const id = nanoid();
 
-  await prisma.board.create({
-    data: {
-      id,
-      name: body.name,
-      userId: body.userId,
-      Column: {
-        create: {
-          id: nanoid(),
-          name: "Coluna 1",
-          position: 0,
+    await prisma.board.create({
+      data: {
+        id,
+        name: body.name,
+        userId: body.userId,
+        columns: {
+          create: {
+            id: nanoid(),
+            name: "Coluna 1",
+            position: 0,
+          },
         },
       },
-    },
-  });
+    });
 
-  return NextResponse.json({ id }, { status: 201 });
+    return NextResponse.json({ id }, { status: 201 });
+  } catch (error) {
+    console.log({ error });
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }
