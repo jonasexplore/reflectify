@@ -10,8 +10,6 @@ generator client {
 model User {
   id           String        @id
   email        String        @unique
-  name         String?
-  image_url    String?
   boards       Board[]
   comments     Comment[]
   cardLikes    CardLike[]
