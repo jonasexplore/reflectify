@@ -46,7 +46,9 @@ export const Container = ({ id, containers, ...props }: Props) => {
     <div
       {...props}
       ref={setNodeRef}
-      className={`flex flex-col gap-2 w-full bg-container rounded-xl p-2 h-full ${props.className}`}
+      className={`flex flex-col gap-2 w-full bg-container rounded-xl p-2 h-full ${
+        props.className ?? ""
+      }`}
       style={{
         ...style,
         ...props.style,

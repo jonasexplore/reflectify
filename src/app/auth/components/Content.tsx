@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+import { Loader } from "lucide-react";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { BuiltInProviderType } from "next-auth/providers/index";
 import {
   ClientSafeProvider,
@@ -11,8 +13,18 @@ import {
 } from "next-auth/react";
 
 import { ModeToggle } from "@/app/boards/components/toggle";
+import { createUser, getUser } from "@/app/services/users";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import logo from "../../../../public/logo.svg";
+import AuthLoading from "../loading";
 
 type AuthContentProps = {
   providers: Record<
@@ -23,10 +35,57 @@ type AuthContentProps = {
 
 export const AuthContent = ({ providers }: AuthContentProps) => {
   const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createAccount, setCreateAccount] = useState(false);
 
-  if (session?.user) {
-    redirect("/boards");
+  const handleCheckUserExists = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const output = await getUser(session?.user?.email as string);
+
+      if (!output) {
+        return setCreateAccount(true);
+      }
+
+      console.log("cai aqui");
+
+      router.push("/boards");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [router, session?.user?.email]);
+
+  const handleCreateAccount = useCallback(async () => {
+    try {
+      setCreateLoading(true);
+
+      await createUser(session?.user?.email as string);
+
+      router.push("/boards");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCreateLoading(false);
+    }
+  }, [router, session?.user?.email]);
+
+  useEffect(() => {
+    if (!session?.user) {
+      return;
+    }
+
+    handleCheckUserExists();
+  }, [handleCheckUserExists, session?.user]);
+
+  if (loading) {
+    return <AuthLoading />;
   }
+
   return (
     <div className="h-screen">
       <div className="grid grid-cols-2">
@@ -99,6 +158,26 @@ export const AuthContent = ({ providers }: AuthContentProps) => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        onOpenChange={(value) => setCreateAccount(value)}
+        open={createAccount}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Criar conta</DialogTitle>
+            <DialogDescription>
+              <div className="flex flex-col gap-4">
+                <span>Eu concordo em criar uma conta!</span>
+                <Button disabled={createLoading} onClick={handleCreateAccount}>
+                  {createLoading && <Loader className="w-4 h-4 animate-spin" />}{" "}
+                  Aceito
+                </Button>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
