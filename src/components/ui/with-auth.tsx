@@ -23,7 +23,7 @@ export function withAuth(Component: any) {
 
     if (!session || session.status !== "authenticated") {
       return (
-        <div className="h-full flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-2">
             <Loader className="w-8 h-8 animate-spin duration-2000" />
             <div className="flex flex-col items-center">

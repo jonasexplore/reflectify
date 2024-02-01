@@ -1,5 +1,5 @@
-import { BoardLoaderSkeleton } from "./components/board/components";
+import AuthLoading from "../auth/loading";
 
 export default function Loading() {
-  return <BoardLoaderSkeleton />;
+  return <AuthLoading />;
 }

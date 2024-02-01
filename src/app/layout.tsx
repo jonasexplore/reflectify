@@ -32,12 +32,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <Suspense fallback={<RootLoading />}>
-              <main className="h-full">{children}</main>
-            </Suspense>
-            <Toaster />
-          </AuthProvider>
+          <main>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </main>
         </ThemeProvider>
       </body>
     </html>

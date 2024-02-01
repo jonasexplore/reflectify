@@ -1,7 +1,4 @@
-import { Suspense } from "react";
-
 import { Navbar } from "./components/navbar";
-import Loading from "./loading";
 
 export default function BoardLayout({
   children,
@@ -9,9 +6,9 @@ export default function BoardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-screen flex flex-col gap-4 mx-6 py-4">
+    <div className="flex flex-col gap-2 p-4">
       <Navbar />
-      <Suspense fallback={<Loading />}>{children}</Suspense>
+      {children}
     </div>
   );
 }

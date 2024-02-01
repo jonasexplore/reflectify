@@ -20,7 +20,7 @@ import { withAuth } from "@/components/ui/with-auth";
 import Loading from "../loading";
 import { createBoard, fetchBoard } from "../services/boards";
 
-import { BoardForm } from "./components/board/components";
+import { BoardForm } from "./components/form";
 
 function Board() {
   const router = useRouter();
@@ -73,7 +73,7 @@ function Board() {
   }
 
   return (
-    <div className="h-full">
+    <div>
       <h2 className="font-bold text-lg mb-6">Todos os meus quadros:</h2>
 
       <div className="flex gap-2">
