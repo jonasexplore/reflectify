@@ -46,7 +46,7 @@ export const Container = ({ id, containers, ...props }: Props) => {
     <div
       {...props}
       ref={setNodeRef}
-      className={`flex flex-col gap-2 w-full bg-container rounded-xl p-2 h-full ${
+      className={`flex flex-col gap-2 w-full bg-container rounded-xl p-2 ${
         props.className ?? ""
       }`}
       style={{
@@ -62,6 +62,14 @@ export const Container = ({ id, containers, ...props }: Props) => {
         attributes={attributes}
         handlerDelete={handlerDelete}
       />
+      <button
+        onClick={() => setOpen(true)}
+        className="flex gap-2 items-center justify-center cursor-pointer rounded-xl border border-dashed p-4 border-slate-300"
+      >
+        <PlusIcon className="w-4 h-4" />
+        Adicionar
+      </button>
+
       <div className="flex flex-col gap-2">
         <SortableContext
           items={containers}
@@ -77,14 +85,6 @@ export const Container = ({ id, containers, ...props }: Props) => {
           ))}
         </SortableContext>
       </div>
-
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 justify-center cursor-pointer rounded-xl border border-dashed p-4 border-slate-300"
-      >
-        <PlusIcon className="w-4 h-4" />
-        Adicionar
-      </button>
 
       <Dialog onOpenChange={(value) => setOpen(value)} open={open}>
         <DialogContent>

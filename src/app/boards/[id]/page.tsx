@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 
 import { withAuth } from "@/components/ui/with-auth";
 
-import { Board } from "../components/board";
 import Loading from "../loading";
+
+import { Board } from "./components/board";
 
 function BoardId() {
   const [isClient, setIsClient] = useState(false);

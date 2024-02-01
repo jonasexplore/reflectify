@@ -106,11 +106,11 @@ export const Board = () => {
   }
 
   return (
-    <div className="h-full flex flex-col gap-2">
-      <div className="mb-4">
+    <div className="flex flex-col gap-2">
+      <div>
         <div className="flex items-center justify-between gap-3 p-2 rounded-lg">
           <div>
-            <span className="text-xl font-bold">{boardName}</span>
+            <span className="text-lg font-bold">{boardName}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -141,7 +141,7 @@ export const Board = () => {
         collisionDetection={collisionDetectionStrategy}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <div id="board" className="relative h-full flex gap-1">
+        <div id="board" className="relative flex gap-1">
           <SortableContext
             items={[...containersIds, PLACEHOLDER_ID]}
             strategy={horizontalListSortingStrategy}
