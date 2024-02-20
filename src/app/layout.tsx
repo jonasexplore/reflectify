@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
@@ -7,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../components/ui/theme-provider";
 
 import { AuthProvider } from "./auth/components";
-import RootLoading from "./loading";
 
 import "./globals.css";
 
