@@ -1,6 +1,12 @@
 import { api } from "../api";
 
-export const getUser = async (email: string) => {
+type GetUserOutput = {
+  id: string;
+};
+
+export const getUser = async (
+  email: string
+): Promise<GetUserOutput | undefined> => {
   try {
     const output = await api.get("/users", { params: { email } });
 
@@ -10,7 +16,13 @@ export const getUser = async (email: string) => {
   }
 };
 
-export const createUser = async (email: string) => {
+type CreateUserOutput = {
+  id: string;
+};
+
+export const createUser = async (
+  email: string
+): Promise<CreateUserOutput | undefined> => {
   try {
     const output = await api.post("/users", {
       email,

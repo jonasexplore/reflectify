@@ -2,21 +2,14 @@ import { create } from "zustand";
 
 type UserProps = {
   id: string;
-  email: string;
-  fullName: string;
-  accessToken: string;
-  profileImage: string;
 };
 
 type AuthProps = {
-  user?: Partial<UserProps>;
-  setUser: (values: Partial<UserProps>) => void;
+  user: UserProps | undefined;
+  setUser: (id: string) => void;
 };
 
 export const useStoreAuth = create<AuthProps>((set) => ({
   user: undefined,
-  setUser: (value) =>
-    set((state) => {
-      return { user: { ...state.user, ...value } };
-    }),
+  setUser: (id) => set({ user: { id } }),
 }));
