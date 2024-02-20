@@ -14,6 +14,7 @@ import {
 
 import { ModeToggle } from "@/app/boards/components/toggle";
 import { createUser, getUser } from "@/app/services/users";
+import { useStoreAuth } from "@/app/store";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,6 +35,7 @@ type AuthContentProps = {
 };
 
 export const AuthContent = ({ providers }: AuthContentProps) => {
+  const { setUser } = useStoreAuth();
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ export const AuthContent = ({ providers }: AuthContentProps) => {
         return setCreateAccount(true);
       }
 
-      console.log("cai aqui");
+      setUser(output.id);
 
       router.push("/boards");
     } catch (error) {
@@ -58,21 +60,24 @@ export const AuthContent = ({ providers }: AuthContentProps) => {
     } finally {
       setLoading(false);
     }
-  }, [router, session?.user?.email]);
+  }, [router, session?.user?.email, setUser]);
 
   const handleCreateAccount = useCallback(async () => {
     try {
       setCreateLoading(true);
 
-      await createUser(session?.user?.email as string);
+      const output = await createUser(session?.user?.email as string);
 
-      router.push("/boards");
+      if (output) {
+        setUser(output.id);
+        router.push("/boards");
+      }
     } catch (error) {
       console.log(error);
     } finally {
       setCreateLoading(false);
     }
-  }, [router, session?.user?.email]);
+  }, [router, session?.user?.email, setUser]);
 
   useEffect(() => {
     if (!session?.user) {

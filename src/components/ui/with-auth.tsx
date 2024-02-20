@@ -1,7 +1,10 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Loader } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
+
+import { getUser } from "@/app/services/users";
+import { useStoreAuth } from "@/app/store";
 
 import { useToast } from "./use-toast";
 
@@ -9,6 +12,29 @@ export function withAuth(Component: any) {
   return function WithAuth(props: any) {
     const { toast } = useToast();
     const session = useSession();
+    const { user, setUser } = useStoreAuth();
+
+    const handleUserAuthenticated = useCallback(async () => {
+      try {
+        if (
+          !(
+            session.status === "authenticated" &&
+            session.data.user?.email &&
+            !user
+          )
+        ) {
+          return;
+        }
+
+        const output = await getUser(session.data.user.email);
+
+        if (output) {
+          setUser(output.id);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }, [session.data?.user?.email, session.status, setUser, user]);
 
     useEffect(() => {
       if (session.status === "unauthenticated") {
@@ -17,9 +43,11 @@ export function withAuth(Component: any) {
           description:
             "É necessário estar autenticado para acessar o ambiente :)",
         });
-        redirect("/auth");
+        return redirect("/auth");
       }
-    }, [session.status, toast]);
+
+      handleUserAuthenticated();
+    }, [handleUserAuthenticated, session.status, toast]);
 
     if (!session || session.status !== "authenticated") {
       return (

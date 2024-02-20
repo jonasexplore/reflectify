@@ -2,7 +2,7 @@ import { useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { nanoid } from "nanoid";
 
-import { useStoreBoard } from "@/app/store";
+import { useStoreAuth, useStoreBoard } from "@/app/store";
 
 type Props = {
   id: UniqueIdentifier;
@@ -10,10 +10,15 @@ type Props = {
 
 export const useCardComment = ({ id }: Props) => {
   const { cards, setCards } = useStoreBoard();
+  const { user } = useStoreAuth();
 
   const [comment, setComment] = useState("");
 
   function handleComment() {
+    if (!user?.id) {
+      return;
+    }
+
     setCards(
       cards.map((card) => {
         if (card.id !== id) {
@@ -29,7 +34,7 @@ export const useCardComment = ({ id }: Props) => {
               id: nanoid(),
               likes: [],
               timesteamp: new Date().toISOString(),
-              userId: "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7",
+              userId: user.id,
             },
           ],
         };

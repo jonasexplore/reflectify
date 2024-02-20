@@ -17,13 +17,14 @@ import {
 } from "@/components/ui/dialog";
 import { withAuth } from "@/components/ui/with-auth";
 
-import Loading from "../loading";
 import { createBoard, fetchBoard } from "../services/boards";
+import { useStoreAuth } from "../store";
 
 import { BoardForm } from "./components/form";
 
 function Board() {
   const router = useRouter();
+  const { user } = useStoreAuth();
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
@@ -32,8 +33,13 @@ function Board() {
 
   const handleFetchBoards = useCallback(async () => {
     try {
+      if (!user?.id) {
+        return;
+      }
+
       setLoading(true);
-      const boards = await fetchBoard("4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7");
+
+      const boards = await fetchBoard(user.id);
 
       setBoards(boards);
     } catch (error) {
@@ -41,17 +47,18 @@ function Board() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const handleCreateBoard = useCallback(
     async (value: { name: string; userId: string }) => {
       try {
+        if (!user?.id) {
+          return;
+        }
+
         setLoadingButton(true);
 
-        const output = await createBoard(
-          value.name,
-          "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7"
-        );
+        const output = await createBoard(value.name, user.id);
 
         router.push(`/boards/${output.id}`);
       } catch (error) {
@@ -60,7 +67,7 @@ function Board() {
         setLoadingButton(false);
       }
     },
-    [router]
+    [router, user?.id]
   );
 
   useEffect(() => setIsClient(true), []);
@@ -69,7 +76,7 @@ function Board() {
   }, [handleFetchBoards]);
 
   if (!isClient || loading) {
-    return <Loading />;
+    return;
   }
 
   return (

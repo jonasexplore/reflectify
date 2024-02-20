@@ -17,7 +17,12 @@ import { MousePointer2, Save } from "lucide-react";
 import { useParams } from "next/navigation";
 
 import { updateBoard } from "@/app/services/boards";
-import { CardProps, ContainerProps, useStoreBoard } from "@/app/store";
+import {
+  CardProps,
+  ContainerProps,
+  useStoreAuth,
+  useStoreBoard,
+} from "@/app/store";
 import { Separator } from "@/components/ui/separator";
 
 import { useBoard } from "./hooks/useBoard";
@@ -47,9 +52,14 @@ export const Board = () => {
   } = useBoard();
   const { reset, cards, containers } = useStoreBoard();
   const [saveLoading, setSaveLoading] = useState(false);
+  const { user } = useStoreAuth();
 
   const handleUpdate = useCallback(async () => {
     try {
+      if (!user?.id) {
+        return;
+      }
+
       setSaveLoading(true);
 
       const cardsToUpdate = Object.keys(items).reduce<
@@ -69,7 +79,7 @@ export const Board = () => {
               columnId: curr,
               id,
               content: card?.content,
-              userId: "4b94ffe5-d0e3-4f2f-adfb-f0b08a3cf9f7",
+              userId: user.id,
             };
           })
         );
@@ -93,7 +103,7 @@ export const Board = () => {
     } finally {
       setSaveLoading(false);
     }
-  }, [cards, containers, containersIds, id, items]);
+  }, [cards, containers, containersIds, id, items, user?.id]);
 
   useEffect(() => {
     return () => {
