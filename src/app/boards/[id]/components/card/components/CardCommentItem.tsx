@@ -2,8 +2,8 @@ import { useState } from "react";
 import { HeartIcon } from "@heroicons/react/20/solid";
 import dayjs from "dayjs";
 
-import { CommentProps } from "@/app/store";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CommentProps } from "@/store";
 
 type Props = {
   comment: CommentProps;

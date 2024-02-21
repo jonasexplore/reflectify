@@ -23,9 +23,15 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
 import { useParams, useRouter } from "next/navigation";
 
-import { getBoard } from "@/app/services/boards";
-import { ItemsProps, useStoreBoard } from "@/app/store";
 import { useToast } from "@/components/ui/use-toast";
+import { getBoard, updateBoard } from "@/services/boards";
+import {
+  CardProps,
+  ContainerProps,
+  ItemsProps,
+  useStoreAuth,
+  useStoreBoard,
+} from "@/store";
 
 export const TRASH_ID = "void";
 const PLACEHOLDER_ID = "placeholder";
@@ -42,6 +48,8 @@ export const useBoard = () => {
   const { toast } = useToast();
   const {
     items,
+    cards,
+    reset,
     setItems,
     fillBoard,
     containers,
@@ -49,6 +57,10 @@ export const useBoard = () => {
     containersIds,
     setContainersIds,
   } = useStoreBoard();
+  const params = useParams();
+  const router = useRouter();
+  const { id } = useParams();
+  const { user } = useStoreAuth();
 
   const addedFirstColumn = useRef(false);
   const recentlyMovedToNewContainer = useRef(false);
@@ -58,8 +70,7 @@ export const useBoard = () => {
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [clonedItems, setClonedItems] = useState<ItemsProps | null>(null);
   const [boardName, setBoardName] = useState("");
-  const params = useParams();
-  const router = useRouter();
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -339,6 +350,64 @@ export const useBoard = () => {
     }
   }, [params.id, fillBoard, toast, router]);
 
+  const handleUpdate = useCallback(async () => {
+    try {
+      if (!user?.id) {
+        return;
+      }
+
+      setSaveLoading(true);
+
+      const cardsToUpdate = Object.keys(items).reduce<
+        Array<{
+          columnId: UniqueIdentifier;
+          id: UniqueIdentifier;
+          content: string;
+          userId: string;
+        }>
+      >((acc, curr) => {
+        const item = items[curr];
+        return acc.concat(
+          item.map((id) => {
+            const card = cards.find((entry) => entry.id === id) as CardProps;
+
+            return {
+              columnId: curr,
+              id,
+              content: card?.content,
+              userId: user.id,
+            };
+          })
+        );
+      }, []);
+
+      await updateBoard(id as string, {
+        cards: cardsToUpdate,
+        columns: containersIds.map((column, index) => {
+          const container = containers.find(
+            (item) => item.id === column
+          ) as ContainerProps;
+
+          return {
+            id: container.id,
+            name: container.name,
+            position: index,
+          };
+        }),
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [cards, containers, containersIds, id, items, user?.id]);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
   useEffect(() => {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
@@ -363,11 +432,14 @@ export const useBoard = () => {
   ]);
 
   return {
+    id,
     items,
     sensors,
     loading,
     activeId,
     boardName,
+    saveLoading,
+    handleUpdate,
     onDragCancel,
     dropAnimation,
     handleDragEnd,

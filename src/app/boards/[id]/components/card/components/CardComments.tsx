@@ -1,8 +1,8 @@
 import { Send } from "lucide-react";
 
-import { CardProps } from "@/app/store";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CardProps } from "@/store";
 
 import { useCardComment } from "../hooks/useCardCommen";
 

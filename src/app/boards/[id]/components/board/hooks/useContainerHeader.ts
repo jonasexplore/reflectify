@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
-import { useStoreBoard } from "@/app/store";
+import { useStoreBoard } from "@/store";
 
 type Props = {
   id: UniqueIdentifier;

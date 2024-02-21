@@ -2,7 +2,7 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useStoreBoard } from "@/app/store";
+import { useStoreBoard } from "@/store";
 
 type Props = {
   id: UniqueIdentifier;

@@ -5,8 +5,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { nanoid } from "nanoid";
 import * as z from "zod";
 
-import { useStoreBoard } from "@/app/store";
 import { toast } from "@/components/ui/use-toast";
+import { useStoreBoard } from "@/store";
 
 type Props = {
   id: UniqueIdentifier;

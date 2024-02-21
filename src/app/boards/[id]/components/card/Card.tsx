@@ -7,8 +7,8 @@ import { ChatBubbleOvalLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 
-import { CardProps } from "@/app/store";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { CardProps } from "@/store";
 
 import { useCard } from "./hooks/useCard";
 import { CardComments } from "./components";
@@ -28,7 +28,6 @@ export const Card = ({
   card,
   children,
   listeners,
-  className,
   attributes,
   handlerDeleteCard,
 }: Props) => {
@@ -42,7 +41,7 @@ export const Card = ({
       onOpenChange={(value) => setIsOpen(value)}
       className="rounded-xl p-2 flex flex-col gap-2 bg-card"
     >
-      <div className={className}>{children}</div>
+      <div className="break-all">{children}</div>
       <div className="flex justify-end items-center gap-4">
         <div className="flex gap-2">
           <button

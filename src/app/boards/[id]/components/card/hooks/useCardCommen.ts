@@ -2,7 +2,7 @@ import { useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { nanoid } from "nanoid";
 
-import { useStoreAuth, useStoreBoard } from "@/app/store";
+import { useStoreAuth, useStoreBoard } from "@/store";
 
 type Props = {
   id: UniqueIdentifier;
