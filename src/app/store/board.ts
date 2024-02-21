@@ -1,6 +1,8 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { create } from "zustand";
 
+import { GetBoardOutput } from "../services/boards";
+
 type LikeProps = {
   id: string;
   userId: string;
@@ -33,6 +35,7 @@ export type ItemsProps = Record<string, UniqueIdentifier[]>;
 
 type StoreProps = {
   cards: CardProps[];
+  fillBoard: (values: GetBoardOutput) => void;
   setCards: (values: CardProps[]) => void;
   addCard: (containerId: UniqueIdentifier, card: CardProps) => void;
   removeCard: (containerId: UniqueIdentifier, cardId: UniqueIdentifier) => void;
@@ -49,6 +52,39 @@ type StoreProps = {
 export const useStoreBoard = create<StoreProps>((set) => ({
   cards: [],
   setCards: (value) => set({ cards: value }),
+  fillBoard: (value) =>
+    set((state) => {
+      const containersIds = value.columns.map((column: any) => column.id);
+      const cards = value.columns.reduce(
+        (acc: any, curr: any) => acc.concat(curr.cards),
+        []
+      );
+      const containers = [
+        ...state.containers,
+        ...value.columns.map((column: any) => ({
+          color: "red",
+          id: column.id,
+          name: column.name,
+        })),
+      ];
+      const items = Object.assign(
+        state.items,
+        value.columns.reduce(
+          (acc: any, curr: any) =>
+            Object.assign(acc, {
+              [curr.id]: curr.cards.map((card: any) => card.id),
+            }),
+          {}
+        )
+      );
+
+      return {
+        items,
+        cards,
+        containers,
+        containersIds,
+      };
+    }),
   addCard: (containerId, card) => {
     set((state) => {
       const items = state.items;

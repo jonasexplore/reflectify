@@ -43,7 +43,7 @@ export const useBoard = () => {
   const {
     items,
     setItems,
-    setCards,
+    fillBoard,
     containers,
     setContainers,
     containersIds,
@@ -319,36 +319,12 @@ export const useBoard = () => {
 
       const board = await getBoard(params.id as string);
 
-      setBoardName(board.name);
+      if (!board) {
+        return;
+      }
 
-      // create function to update all fields one once
-      setContainersIds(board.columns.map((column: any) => column.id));
-      setItems(
-        Object.assign(
-          items,
-          board.columns.reduce(
-            (acc: any, curr: any) =>
-              Object.assign(acc, {
-                [curr.id]: curr.cards.map((card: any) => card.id),
-              }),
-            {}
-          )
-        )
-      );
-      setCards(
-        board.columns.reduce(
-          (acc: any, curr: any) => acc.concat(curr.cards),
-          []
-        )
-      );
-      setContainers([
-        ...containers,
-        ...board.columns.map((column: any) => ({
-          color: "red",
-          id: column.id,
-          name: column.name,
-        })),
-      ]);
+      setBoardName(board.name);
+      fillBoard(board);
     } catch (error) {
       toast({
         title: "Quadro não encontrato",
@@ -361,17 +337,7 @@ export const useBoard = () => {
     } finally {
       setLoading(false);
     }
-  }, [
-    toast,
-    items,
-    router,
-    setItems,
-    setCards,
-    params.id,
-    containers,
-    setContainers,
-    setContainersIds,
-  ]);
+  }, [params.id, fillBoard, toast, router]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
