@@ -33,7 +33,12 @@ export async function GET(
       return NextResponse.json({}, { status: 404 });
     }
 
-    return NextResponse.json(board, { status: 200 });
+    const response = {
+      ...board,
+      columns: board.columns.toSorted((a, b) => a.position - b.position),
+    };
+
+    return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.log({ error });
   }
