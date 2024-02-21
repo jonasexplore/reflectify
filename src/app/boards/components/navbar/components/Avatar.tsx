@@ -1,7 +1,6 @@
 "use client";
 
 import { ExitIcon } from "@radix-ui/react-icons";
-import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
