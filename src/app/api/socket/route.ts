@@ -2,7 +2,7 @@ import { NextApiRequest } from "next";
 import { NextResponse } from "next/server";
 import { Server, Socket } from "socket.io";
 
-import { NextApiResponseWithSocket } from "@/app/types/http";
+import { NextApiResponseWithSocket } from "@/types/http";
 
 const PORT = Number(process.env.SOCKET_PORT ?? 3005);
 

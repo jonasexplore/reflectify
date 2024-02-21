@@ -13,8 +13,6 @@ import {
 } from "next-auth/react";
 
 import { ModeToggle } from "@/app/boards/components/toggle";
-import { createUser, getUser } from "@/app/services/users";
-import { useStoreAuth } from "@/app/store";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { createUser, getUser } from "@/services/users";
+import { useStoreAuth } from "@/store";
 
 import logo from "../../../../public/logo.svg";
 import AuthLoading from "../loading";

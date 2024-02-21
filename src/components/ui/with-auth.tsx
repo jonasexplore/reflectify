@@ -3,8 +3,8 @@ import { Loader } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-import { getUser } from "@/app/services/users";
-import { useStoreAuth } from "@/app/store";
+import { getUser } from "@/services/users";
+import { useStoreAuth } from "@/store";
 
 import { useToast } from "./use-toast";
 

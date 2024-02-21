@@ -1,7 +1,28 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { create } from "zustand";
 
-import { GetBoardOutput } from "../services/boards";
+export type BoardProps = {
+  id: string;
+  name: string;
+  created: string;
+  updated: string;
+  userId: string;
+  columns: Array<{
+    id: string;
+    name: string;
+    position: number;
+    boardId: string;
+    cards: Array<{
+      id: string;
+      content: string;
+      userId: string;
+      boardId: string;
+      columnId: string;
+      likes: any[];
+      comments: any[];
+    }>;
+  }>;
+};
 
 type LikeProps = {
   id: string;
@@ -35,7 +56,7 @@ export type ItemsProps = Record<string, UniqueIdentifier[]>;
 
 type StoreProps = {
   cards: CardProps[];
-  fillBoard: (values: GetBoardOutput) => void;
+  fillBoard: (values: BoardProps) => void;
   setCards: (values: CardProps[]) => void;
   addCard: (containerId: UniqueIdentifier, card: CardProps) => void;
   removeCard: (containerId: UniqueIdentifier, cardId: UniqueIdentifier) => void;
