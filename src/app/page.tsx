@@ -1,11 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 const RootPage = () => {
-  const router = useRouter();
-
-  router.push("/auth");
+  redirect("/auth");
 };
 
 export default RootPage;
