@@ -90,9 +90,9 @@ export const Container = ({ id, containers, ...props }: Props) => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo card</DialogTitle>
-            <DialogDescription>
+            <div>
               <CardForm onSubmit={onSubmit} />
-            </DialogDescription>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>

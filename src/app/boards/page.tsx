@@ -11,14 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { withAuth } from "@/components/ui/with-auth";
+import { useStoreAuth } from "@/store";
 
-import { createBoard, fetchBoard } from "../services/boards";
-import { useStoreAuth } from "../store";
+import { createBoard, fetchBoard } from "../../services/boards";
 
 import { BoardForm } from "./components/form";
 
@@ -125,12 +124,13 @@ function Board() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo quadro</DialogTitle>
-            <DialogDescription>
+
+            <div>
               <BoardForm
                 loadingButton={loadingButton}
                 onSubmit={handleCreateBoard}
               />
-            </DialogDescription>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
