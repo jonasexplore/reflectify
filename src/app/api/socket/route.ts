@@ -14,7 +14,7 @@ export type ClientProps = {
   y?: string;
 };
 
-const clients = new Map<Socket, ClientProps>(new Set());
+const clients = new Map<Socket, ClientProps>();
 
 export async function GET(
   _req: NextApiRequest,
