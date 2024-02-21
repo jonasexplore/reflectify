@@ -30,7 +30,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main>
+          <main className="h-screen">
             <AuthProvider>
               {children}
               <Toaster />
