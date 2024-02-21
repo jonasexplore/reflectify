@@ -100,6 +100,7 @@ export const Board = () => {
         }),
       });
     } catch (error) {
+      console.log(error);
     } finally {
       setSaveLoading(false);
     }

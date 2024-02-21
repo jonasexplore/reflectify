@@ -12,13 +12,38 @@ export const fetchBoard = async (userId: string) => {
   }
 };
 
-export const getBoard = async (boardId: string) => {
+export type GetBoardOutput = {
+  id: string;
+  name: string;
+  created: string;
+  updated: string;
+  userId: string;
+  columns: Array<{
+    id: string;
+    name: string;
+    position: number;
+    boardId: string;
+    cards: Array<{
+      id: string;
+      content: string;
+      userId: string;
+      boardId: string;
+      columnId: string;
+      likes: any[];
+      comments: any[];
+    }>;
+  }>;
+};
+
+export const getBoard = async (
+  boardId: string
+): Promise<GetBoardOutput | undefined> => {
   try {
     const output = await api.get(`/boards/${boardId}`);
 
     return output.data;
   } catch (error) {
-    return {};
+    console.log(error);
   }
 };
 
