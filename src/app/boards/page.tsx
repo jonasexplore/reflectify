@@ -1,13 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { PlusIcon } from "@radix-ui/react-icons";
-import dayjs from "dayjs";
-import { ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -17,36 +13,38 @@ import {
 import { withAuth } from "@/components/ui/with-auth";
 import { useStoreAuth } from "@/store";
 
-import { createBoard, fetchBoard } from "../../services/boards";
+import { createBoard } from "../../services/boards";
 
+import { BoardCards } from "./components/cards";
 import { BoardForm } from "./components/form";
+
+const queryClient = new QueryClient();
 
 function Board() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useStoreAuth();
   const [isClient, setIsClient] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
-  const [boards, setBoards] = useState<any[]>([]);
-  const [open, setOpen] = useState(false);
 
-  const handleFetchBoards = useCallback(async () => {
-    try {
-      if (!user?.id) {
-        return;
+  const searchParams = useSearchParams();
+  const open = Boolean(searchParams.get("createBoardModalIsOpen"));
+
+  const createQueryString = useCallback(
+    (name: string, value: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (!value) {
+        params.delete(name);
+        return "";
       }
 
-      setLoading(true);
+      params.set(name, value);
 
-      const boards = await fetchBoard(user.id);
-
-      setBoards(boards);
-    } catch (error) {
-      console.error("erro", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id]);
+      return params.toString();
+    },
+    [searchParams]
+  );
 
   const handleCreateBoard = useCallback(
     async (value: { name: string; userId: string }) => {
@@ -70,71 +68,43 @@ function Board() {
   );
 
   useEffect(() => setIsClient(true), []);
-  useEffect(() => {
-    handleFetchBoards();
-  }, [handleFetchBoards]);
 
-  if (!isClient || loading) {
+  if (!isClient) {
     return;
   }
 
   return (
-    <div>
-      <h2 className="font-bold text-lg mb-6">Todos os meus quadros:</h2>
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <h2 className="font-bold text-lg mb-6">Todos os meus quadros:</h2>
+        <BoardCards />
 
-      <div className="flex gap-2">
-        {boards.map((item) => {
-          return (
-            <div
-              key={item.id}
-              className="bg-container border rounded-lg p-4 flex flex-col justify-between gap-2 border-l-2 border-l-fuchsia-600"
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between">
-                  <span>{item.name}</span>
-                  <TrashIcon className="w-4 h-4 text-red-400" />
-                </div>
-                <Badge variant="default">retrospectiva</Badge>
-                <span className="text-sm text-muted-foreground">
-                  Data de criação:{" "}
-                  {dayjs(item.created).format("DD/MM/YYYY [às] HH:mm")}
-                </span>
-              </div>
-              <button
-                className="flex gap-2 items-center cursor-pointer"
-                onClick={() => router.push(`/boards/${item.id}`)}
-              >
-                <span className="font-bold">Acessar quadro</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          );
-        })}
-        <button
-          key={"random"}
-          className="rounded-lg border border-dashed border-slate-600 p-4 flex flex-col justify-center items-center"
-          onClick={() => setOpen(true)}
+        <Dialog
+          onOpenChange={(value) => {
+            router.push(
+              `${pathname}?${createQueryString(
+                "createBoardModalIsOpen",
+                value ? String(value) : null
+              )}`
+            );
+          }}
+          open={open}
         >
-          <span>Criar novo quadro</span>
-          <PlusIcon className="w-8 h-8" />
-        </button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Novo quadro</DialogTitle>
+
+              <div>
+                <BoardForm
+                  loadingButton={loadingButton}
+                  onSubmit={handleCreateBoard}
+                />
+              </div>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <Dialog onOpenChange={(value) => setOpen(value)} open={open}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo quadro</DialogTitle>
-
-            <div>
-              <BoardForm
-                loadingButton={loadingButton}
-                onSubmit={handleCreateBoard}
-              />
-            </div>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </QueryClientProvider>
   );
 }
 
