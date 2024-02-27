@@ -10,8 +10,6 @@ export type ClientProps = {
   id: string;
   roomId: string;
   sender?: string;
-  x?: string;
-  y?: string;
 };
 
 const clients = new Map<Socket, ClientProps>();
@@ -53,21 +51,6 @@ export async function GET(
 
     socket.join(roomId);
     clients.set(socket, metadata);
-
-    socket.on("message", (message: ClientProps) => {
-      const metadata = clients.get(socket);
-
-      if (!metadata) {
-        return;
-      }
-
-      message.sender = metadata?.id;
-      message.roomId = metadata.roomId;
-
-      [...Array.from(clients.keys())].forEach((client) => {
-        client.to(message.roomId).emit("receive", message);
-      });
-    });
 
     socket.on("disconnect", async () => {
       const client = clients.get(socket);
