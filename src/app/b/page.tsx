@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { withAuth } from "@/components/ui/with-auth";
 
-import Loading from "../loading";
+import Loading from "../boards/loading";
 
 import { Board } from "./components/board";
 

@@ -109,13 +109,6 @@ export const Board = () => {
             activeId && <SortableItem id={activeId} />
           )}
         </DragOverlay>
-
-        <template id="cursor">
-          <div className="flex flex-col items-center">
-            <MousePointer2 className="w-4 h-4" />
-            <span className="text-[12px] font-bold"></span>
-          </div>
-        </template>
       </DndContext>
     </div>
   );

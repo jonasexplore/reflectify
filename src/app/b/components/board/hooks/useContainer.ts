@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useCallback } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { defaultAnimateLayoutChanges, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { nanoid } from "nanoid";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as z from "zod";
 
 import { toast } from "@/components/ui/use-toast";
@@ -14,7 +15,10 @@ type Props = {
 };
 
 export const useContainer = ({ id, containers }: Props) => {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const open = Boolean(searchParams.get("newMessageModalIsOpen"));
   const { addCard, removeCard, containersIds, removeContainer } =
     useStoreBoard();
 
@@ -39,6 +43,36 @@ export const useContainer = ({ id, containers }: Props) => {
       .max(512, "A mesagem deve ter no máximo 512 caracteres"),
   });
 
+  const createQueryString = useCallback(
+    (name: string, value: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      console.log(name, value);
+
+      if (!value) {
+        params.delete(name);
+        return params.toString();
+      }
+
+      params.set(name, value);
+
+      return params.toString();
+    },
+    [searchParams]
+  );
+
+  const setOpen = useCallback(
+    (value: boolean) => {
+      router.push(
+        `${pathname}?${createQueryString(
+          "newMessageModalIsOpen",
+          value ? String(value) : null
+        )}`
+      );
+    },
+    [createQueryString, pathname, router]
+  );
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     addCard(id, {
       columnId: id,
@@ -48,7 +82,9 @@ export const useContainer = ({ id, containers }: Props) => {
       content: values.message,
     });
 
-    setOpen(false);
+    router.push(
+      `${pathname}?${createQueryString("newMessageModalIsOpen", null)}`
+    );
   }
 
   function handlerDelete(containerId: UniqueIdentifier) {

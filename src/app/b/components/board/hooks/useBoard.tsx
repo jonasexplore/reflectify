@@ -21,7 +21,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { useToast } from "@/components/ui/use-toast";
 import { getBoard, updateBoard } from "@/services/boards";
@@ -57,9 +57,9 @@ export const useBoard = () => {
     containersIds,
     setContainersIds,
   } = useStoreBoard();
-  const params = useParams();
   const router = useRouter();
-  const { id } = useParams();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const { user } = useStoreAuth();
 
   const addedFirstColumn = useRef(false);
@@ -328,7 +328,7 @@ export const useBoard = () => {
     try {
       setLoading(true);
 
-      const board = await getBoard(params.id as string);
+      const board = await getBoard(id as string);
 
       if (!board) {
         return;
@@ -348,7 +348,7 @@ export const useBoard = () => {
     } finally {
       setLoading(false);
     }
-  }, [params.id, fillBoard, toast, router]);
+  }, [id, fillBoard, toast, router]);
 
   const handleUpdate = useCallback(async () => {
     try {
