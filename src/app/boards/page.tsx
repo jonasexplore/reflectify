@@ -36,7 +36,7 @@ function Board() {
 
       if (!value) {
         params.delete(name);
-        return "";
+        return params.toString();
       }
 
       params.set(name, value);
@@ -57,7 +57,7 @@ function Board() {
 
         const output = await createBoard(value.name, user.id);
 
-        router.push(`/boards/${output.id}`);
+        router.push(`/b?id=${output.id}`);
       } catch (error) {
         console.error("erro", error);
       } finally {

@@ -6,12 +6,7 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { ArrowRight } from "lucide-react";
-import {
-  redirect,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { fetchBoard } from "@/services/boards";
@@ -30,7 +25,7 @@ export const BoardCards = () => {
 
       if (!value) {
         params.delete(name);
-        return "";
+        return params.toString();
       }
 
       params.set(name, value);
@@ -76,7 +71,9 @@ export const BoardCards = () => {
             </div>
             <button
               className="flex gap-2 items-center cursor-pointer"
-              onClick={() => redirect(`/boards/${item.id}`)}
+              onClick={() => {
+                router.push(`/b?id=${item.id}`);
+              }}
             >
               <span className="font-bold">Acessar quadro</span>
               <ArrowRight className="w-4 h-4" />
