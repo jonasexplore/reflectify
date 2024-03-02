@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const id = nanoid();
 
-    await prisma.board.create({
+    const output = await prisma.board.create({
       data: {
         id,
         name: body.name,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ id }, { status: 201 });
+    return NextResponse.json(output, { status: 201 });
   } catch (error) {
     console.log({ error });
 
