@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "../components/ui/theme-provider";
 
 import { AuthProvider } from "./auth/components";
+import Providers from "./providers";
 
 import "./globals.css";
 
@@ -32,7 +33,7 @@ export default function RootLayout({
         >
           <main className="h-screen">
             <AuthProvider>
-              {children}
+              <Providers>{children}</Providers>
               <Toaster />
             </AuthProvider>
           </main>
