@@ -1,0 +1,1 @@
+export { BoardCards } from "./Card";

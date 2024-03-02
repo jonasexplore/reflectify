@@ -39,9 +39,7 @@ export const BoardForm = ({ onSubmit, loadingButton }: Props) => {
 
   return (
     <Form {...form}>
-      <FormDescription>
-        Crie um novo quadro informando um nome abaixo!
-      </FormDescription>
+      <FormDescription>Defina o nome do quadro abaixo:</FormDescription>
       <form onSubmit={form.handleSubmit(onSubmit)} className="my-4 space-y-4">
         <FormField
           control={form.control}
