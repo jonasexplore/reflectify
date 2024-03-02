@@ -5,11 +5,11 @@ type UserProps = {
 };
 
 type AuthProps = {
-  user: UserProps | undefined;
+  user: UserProps | null;
   setUser: (id: string) => void;
 };
 
 export const useStoreAuth = create<AuthProps>((set) => ({
-  user: undefined,
+  user: null,
   setUser: (id) => set({ user: { id } }),
 }));

@@ -17,16 +17,23 @@ export const fetchBoard = async (userId: string) => {
 export const getBoard = async (
   boardId: string
 ): Promise<BoardProps | undefined> => {
-  try {
-    const output = await api.get(`/boards/${boardId}`);
+  const output = await api.get(`/boards/${boardId}`);
 
-    return output.data;
-  } catch (error) {
-    console.log(error);
-  }
+  return output.data;
 };
 
-export const createBoard = async (name: string, userId: string) => {
+type CreateBoardInput = { name: string; userId: string };
+type CreateBoardOutput = {
+  id: string;
+  name: string;
+  created: Date;
+  updated: Date;
+  userId: string;
+};
+export const createBoard = async ({
+  name,
+  userId,
+}: CreateBoardInput): Promise<CreateBoardOutput> => {
   const output = await api.post("/boards", {
     name,
     userId,
