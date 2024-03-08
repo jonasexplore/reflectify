@@ -11,7 +11,6 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";

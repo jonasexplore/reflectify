@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   NavigationMenu,
@@ -17,6 +18,8 @@ import { ModeToggle } from "../toggle";
 import { Profile } from "./components/Avatar";
 
 export const Navbar = () => {
+  const path = usePathname();
+
   return (
     <div className="border-b ">
       <div className="flex justify-between items-center pb-2">
@@ -35,7 +38,7 @@ export const Navbar = () => {
           <NavigationMenuItem>
             <Link href="/boards" legacyBehavior passHref>
               <NavigationMenuLink
-                active
+                active={path.includes("/boards")}
                 className={navigationMenuTriggerStyle()}
               >
                 Quadros

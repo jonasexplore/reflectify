@@ -19,6 +19,7 @@ export const useContainer = ({ id, containers }: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const open = Boolean(searchParams.get("newMessageModalIsOpen"));
+  const containerId = searchParams.get("c") as UniqueIdentifier;
   const { addCard, removeCard, containersIds, removeContainer } =
     useStoreBoard();
 
@@ -44,17 +45,17 @@ export const useContainer = ({ id, containers }: Props) => {
   });
 
   const createQueryString = useCallback(
-    (name: string, value: string | null) => {
+    (keys: string[], values: (string | null)[]) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      console.log(name, value);
+      keys.forEach((key, index) => {
+        if (!values[index]) {
+          params.delete(key);
+          return;
+        }
 
-      if (!value) {
-        params.delete(name);
-        return params.toString();
-      }
-
-      params.set(name, value);
+        params.set(key, String(values[index]));
+      });
 
       return params.toString();
     },
@@ -65,17 +66,27 @@ export const useContainer = ({ id, containers }: Props) => {
     (value: boolean) => {
       router.push(
         `${pathname}?${createQueryString(
-          "newMessageModalIsOpen",
-          value ? String(value) : null
+          ["c", "newMessageModalIsOpen"],
+          [value ? String(id) : null, value ? String(value) : null]
         )}`
       );
     },
-    [createQueryString, pathname, router]
+    [createQueryString, id, pathname, router]
   );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    addCard(id, {
-      columnId: id,
+    if (!containersIds.includes(containerId)) {
+      toast({
+        title: "Algo deu errado!",
+        description:
+          "Parece que a coluna que você está tentando adicionar não existe mais.",
+      });
+
+      return;
+    }
+
+    addCard(containerId, {
+      columnId: containerId,
       comments: [],
       id: nanoid(),
       likes: [],
@@ -83,7 +94,10 @@ export const useContainer = ({ id, containers }: Props) => {
     });
 
     router.push(
-      `${pathname}?${createQueryString("newMessageModalIsOpen", null)}`
+      `${pathname}?${createQueryString(
+        ["c", "newMessageModalIsOpen"],
+        [null, null]
+      )}`
     );
   }
 

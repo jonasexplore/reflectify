@@ -96,18 +96,24 @@ function Board() {
   return (
     <div className="flex items-center justify-center">
       <div className="w-full max-w-7xl">
-        <div className="mb-4 flex gap-3 justify-end">
-          <Input placeholder="Busque pelo nome do quadro..." />
-          <Select defaultValue="date">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Ordenar por data</SelectItem>
-              <SelectItem value="name">Ordenar por nome</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="mb-4 flex justify-end items-center gap-3 flex-col md:flex-row">
+          <Input
+            className="w-full"
+            placeholder="Busque pelo nome do quadro..."
+          />
+          <div className="w-full md:w-auto min-w-[180px]">
+            <Select defaultValue="date">
+              <SelectTrigger className="w-full ">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Ordenar por data</SelectItem>
+                <SelectItem value="name">Ordenar por nome</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
+            className="w-full md:w-auto"
             onClick={() => {
               router.push(
                 `${pathname}?${createQueryString(
