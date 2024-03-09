@@ -55,7 +55,7 @@ export function withAuth(Component: any) {
           <div className="flex flex-col items-center justify-center gap-2">
             <Loader className="w-8 h-8 animate-spin duration-2000" />
             <div className="flex flex-col items-center">
-              <span className="font-bold">Carregando</span>
+              <span className="font-bold">Validando sessão</span>
               <span className="text-muted-foreground">
                 Aguarde enquando buscamos seus dados :)
               </span>
