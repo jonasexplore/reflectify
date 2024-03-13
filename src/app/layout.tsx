@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { AuthProvider } from "@/components/ui/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 import { ThemeProvider } from "../components/ui/theme-provider";
 
-import { AuthProvider } from "./auth/components";
 import Providers from "./providers";
 
 import "./globals.css";

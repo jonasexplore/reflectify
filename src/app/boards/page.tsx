@@ -1,9 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,77 +18,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { withAuth } from "@/components/ui/with-auth";
-import { useStoreAuth } from "@/store";
-
-import { createBoard } from "../../services/boards";
 
 import { BoardCards } from "./components/card/Card";
 import { BoardForm } from "./components/form";
+import { useBoards } from "./hooks/useBoards";
 
 function Board() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { user } = useStoreAuth();
-  const [isClient, setIsClient] = useState(false);
-  const queryClient = useQueryClient();
-
-  const searchParams = useSearchParams();
-  const open = Boolean(searchParams.get("createBoardModalIsOpen"));
-
-  const createQueryString = useCallback(
-    (name: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      if (!value) {
-        params.delete(name);
-        return params.toString();
-      }
-
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
-
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: createBoard,
-    onSuccess: (data) => {
-      queryClient.setQueryData(["boards", user?.id], (updater: any) => {
-        return [...updater, data];
-      });
-
-      router.push(
-        `${pathname}?${createQueryString("createBoardModalIsOpen", null)}`
-      );
-
-      router.push(`/b?id=${data.id}`);
-    },
-  });
-
-  const handleCreateBoard = useCallback(
-    async (value: { name: string; userId: string }) => {
-      try {
-        if (!user?.id) {
-          return;
-        }
-
-        await mutateAsync({
-          name: value.name,
-          userId: user.id,
-        });
-      } catch (error) {
-        console.error("erro", error);
-      }
-    },
-    [mutateAsync, user?.id]
-  );
-
-  useEffect(() => setIsClient(true), []);
-
-  if (!isClient) {
-    return;
-  }
+  const {
+    open,
+    router,
+    pathname,
+    isPending,
+    searchParams,
+    handleCreateBoard,
+    createQueryString,
+  } = useBoards();
 
   return (
     <div className="flex items-center justify-center">
@@ -117,8 +58,9 @@ function Board() {
             onClick={() => {
               router.push(
                 `${pathname}?${createQueryString(
-                  "createBoardModalIsOpen",
-                  "true"
+                  searchParams,
+                  ["createBoardModalIsOpen"],
+                  ["true"]
                 )}`
               );
             }}
@@ -134,8 +76,9 @@ function Board() {
           onOpenChange={(value) => {
             router.push(
               `${pathname}?${createQueryString(
-                "createBoardModalIsOpen",
-                value ? String(value) : null
+                searchParams,
+                ["createBoardModalIsOpen"],
+                [value ? String(value) : null]
               )}`
             );
           }}
