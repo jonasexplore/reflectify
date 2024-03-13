@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { fetchBoard } from "@/services/boards";
 import { useStoreAuth } from "@/store";
 
-import { MoreOptions } from "./components/more-options";
+import { MoreOptions } from "./components/MoreOptions";
 
 export const BoardCards = () => {
   const router = useRouter();
