@@ -1,50 +1,7 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { create } from "zustand";
 
-export type BoardProps = {
-  id: string;
-  name: string;
-  created: string;
-  updated: string;
-  userId: string;
-  columns: Array<{
-    id: string;
-    name: string;
-    position: number;
-    boardId: string;
-    cards: Array<{
-      id: string;
-      content: string;
-      userId: string;
-      boardId: string;
-      columnId: string;
-      likes: any[];
-      comments: any[];
-    }>;
-  }>;
-};
-
-type LikeProps = {
-  id: string;
-  userId: string;
-  timestamp: string;
-};
-
-export type CommentProps = {
-  id: string;
-  userId: string;
-  timesteamp: string;
-  likes: LikeProps[];
-  content: string;
-};
-
-export type CardProps = {
-  id: UniqueIdentifier;
-  columnId: UniqueIdentifier;
-  content: string;
-  likes: LikeProps[];
-  comments: CommentProps[];
-};
+import { BoardProps, CardProps } from "@/types/board";
 
 export type ContainerProps = {
   id: string;
@@ -75,14 +32,14 @@ export const useStoreBoard = create<StoreProps>((set) => ({
   setCards: (value) => set({ cards: value }),
   fillBoard: (value) =>
     set((state) => {
-      const containersIds = value.columns.map((column: any) => column.id);
-      const cards = value.columns.reduce(
-        (acc: any, curr: any) => acc.concat(curr.cards),
+      const containersIds = value.columns.map((column) => column.id);
+      const cards = value.columns.reduce<CardProps[]>(
+        (acc, curr) => acc.concat(curr.cards),
         []
       );
       const containers = [
         ...state.containers,
-        ...value.columns.map((column: any) => ({
+        ...value.columns.map((column) => ({
           color: "red",
           id: column.id,
           name: column.name,
@@ -91,9 +48,9 @@ export const useStoreBoard = create<StoreProps>((set) => ({
       const items = Object.assign(
         state.items,
         value.columns.reduce(
-          (acc: any, curr: any) =>
+          (acc, curr) =>
             Object.assign(acc, {
-              [curr.id]: curr.cards.map((card: any) => card.id),
+              [curr.id]: curr.cards.map((card) => card.id),
             }),
           {}
         )

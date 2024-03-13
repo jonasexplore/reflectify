@@ -1,6 +1,6 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 
-import { BoardProps } from "@/store";
+import { BoardProps } from "@/types/board";
 
 import { api } from "../api";
 
