@@ -8,7 +8,7 @@ import { CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { CardProps } from "@/store";
+import { CardProps } from "@/types/board";
 
 import { useCard } from "./hooks/useCard";
 import { CardComments } from "./components";

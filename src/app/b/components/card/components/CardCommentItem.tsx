@@ -3,7 +3,7 @@ import { HeartIcon } from "@heroicons/react/20/solid";
 import dayjs from "dayjs";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { CommentProps } from "@/store";
+import { CommentProps } from "@/types/board";
 
 type Props = {
   comment: CommentProps;
@@ -22,10 +22,10 @@ export const CardCommentItem = ({ comment }: Props) => {
           <span className="text-sm">{comment.content}</span>
           <div className="flex justify-end items-center gap-2">
             <span className="text-sm">
-              {dayjs(comment.timesteamp).format("HH:mm")}
+              {dayjs(comment.timestamp).format("HH:mm")}
             </span>
             <span className="text-sm font-semibold">
-              {comment.likes.length}
+              {comment.commentLikes.length}
             </span>
             <button
               onClick={() => setLiked(!liked)}

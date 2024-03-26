@@ -1,3 +1,5 @@
+import { UniqueIdentifier } from "@dnd-kit/core";
+
 type LikeCardProps = {
   id: string;
   timestamp: string;
@@ -25,11 +27,11 @@ export type CommentProps = {
 };
 
 export type CardProps = {
-  id: string;
+  id: UniqueIdentifier;
   content: string;
   userId: string;
   boardId: string;
-  columnId: string;
+  columnId: UniqueIdentifier;
   likes: LikeCardProps[];
   comments: CommentProps[];
 };
