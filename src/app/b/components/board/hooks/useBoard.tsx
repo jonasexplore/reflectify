@@ -21,17 +21,13 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useToast } from "@/components/ui/use-toast";
-import { getBoard, updateBoard } from "@/services/boards";
-import {
-  CardProps,
-  ContainerProps,
-  ItemsProps,
-  useStoreAuth,
-  useStoreBoard,
-} from "@/store";
+import { getBoard } from "@/services/boards";
+import { ItemsProps, useStoreBoard } from "@/store";
+
+import { useSocketClient } from "./useSocketClient";
 
 export const TRASH_ID = "void";
 const PLACEHOLDER_ID = "placeholder";
@@ -44,33 +40,41 @@ type HandleDragItemProps = {
   activeContainer: UniqueIdentifier;
 };
 
+type ControlStateBoard = {
+  active: UniqueIdentifier | null;
+  clone: ItemsProps | null;
+  loading: boolean;
+  saveLoading: boolean;
+};
+
 export const useBoard = () => {
   const { toast } = useToast();
   const {
+    set,
     items,
-    cards,
     reset,
-    setItems,
+    cards,
+    board,
+    socket,
     fillBoard,
     containers,
-    setContainers,
     containersIds,
-    setContainersIds,
   } = useStoreBoard();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { loading: loadingSocketClient } = useSocketClient({ set, board });
   const id = searchParams.get("id");
-  const { user } = useStoreAuth();
 
   const addedFirstColumn = useRef(false);
   const recentlyMovedToNewContainer = useRef(false);
   const lastOverId = useRef<UniqueIdentifier | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [clonedItems, setClonedItems] = useState<ItemsProps | null>(null);
-  const [boardName, setBoardName] = useState("");
-  const [saveLoading, setSaveLoading] = useState(false);
+  const [control, setControl] = useState<ControlStateBoard>({
+    active: null,
+    clone: null,
+    loading: true,
+    saveLoading: false,
+  });
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -89,48 +93,57 @@ export const useBoard = () => {
   };
 
   const onDragCancel = () => {
-    if (clonedItems) {
-      setItems(clonedItems);
+    if (control.clone) {
+      set({ items: control.clone });
     }
 
-    setActiveId(null);
-    setClonedItems(null);
+    setControl((prev) => ({ ...prev, active: null, clone: null }));
   };
 
   function handleDragStart({ active }: DragStartEvent) {
-    setActiveId(active.id);
-    setClonedItems(items);
+    setControl((prev) => ({ ...prev, active: active.id, clone: items }));
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (active.id in items && over?.id) {
       const activeIndex = containersIds.indexOf(active.id);
       const overIndex = containersIds.indexOf(over.id);
-      setContainersIds(arrayMove(containersIds, activeIndex, overIndex));
+
+      const update = {
+        containersIds: arrayMove(containersIds, activeIndex, overIndex),
+      };
+
+      set(update);
+      socket?.emit("update:board", JSON.stringify(update));
     }
 
     const activeContainer = findContainer(active.id);
 
     if (!activeContainer) {
-      setActiveId(null);
+      setControl((prev) => ({ ...prev, active: null }));
       return;
     }
 
     const overId = over?.id;
 
     if (overId == null) {
-      setActiveId(null);
+      setControl((prev) => ({ ...prev, active: null }));
       return;
     }
 
     if (overId === TRASH_ID) {
-      setItems({
-        ...items,
+      const filterFromCurrentColumn = {
         [activeContainer]: items[activeContainer].filter(
-          (id) => id !== activeId
+          (id) => id !== control.active
         ),
-      });
-      setActiveId(null);
+      };
+
+      const update = { items: { ...items, ...filterFromCurrentColumn } };
+
+      set(update);
+      socket?.emit("update:board", JSON.stringify(update));
+
+      setControl((prev) => ({ ...prev, active: null }));
       return;
     }
 
@@ -138,16 +151,24 @@ export const useBoard = () => {
       const newContainerId = nanoid();
 
       unstable_batchedUpdates(() => {
-        setContainersIds([...containersIds, newContainerId]);
-        setItems({
-          ...items,
+        const moveToNewColumn = {
           [activeContainer]: items[activeContainer].filter(
-            (id) => id !== activeId
+            (id) => id !== control.active
           ),
           [newContainerId]: [active.id],
-        });
-        setActiveId(null);
+        };
+
+        const update = {
+          items: { ...items, ...moveToNewColumn },
+          containersIds: [...containersIds, newContainerId],
+        };
+
+        set(update);
+        socket?.emit("update:board", JSON.stringify(update));
+
+        setControl((prev) => ({ ...prev, active: null }));
       });
+
       return;
     }
 
@@ -158,18 +179,22 @@ export const useBoard = () => {
       const overIndex = items[overContainer].indexOf(overId);
 
       if (activeIndex !== overIndex) {
-        setItems({
-          ...items,
+        const cardMoveToOtherColumn = {
           [overContainer]: arrayMove(
             items[overContainer],
             activeIndex,
             overIndex
           ),
-        });
+        };
+
+        const update = { items: { ...items, ...cardMoveToOtherColumn } };
+
+        set(update);
+        socket?.emit("update:board", JSON.stringify(update));
       }
     }
 
-    setActiveId(null);
+    setControl((prev) => ({ ...prev, active: null }));
   }
 
   function handleDragContainer({
@@ -225,20 +250,23 @@ export const useBoard = () => {
       return;
     }
 
-    setItems(
-      handleDragContainer({
+    const update = {
+      items: handleDragContainer({
         over,
         active,
         overId,
         overContainer,
         activeContainer,
-      })
-    );
+      }),
+    };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
   }
 
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
-      if (activeId && activeId in items) {
+      if (control.active && control.active in items) {
         return closestCenter({
           ...args,
           droppableContainers: args.droppableContainers.filter(
@@ -280,12 +308,12 @@ export const useBoard = () => {
       }
 
       if (recentlyMovedToNewContainer.current) {
-        lastOverId.current = activeId;
+        lastOverId.current = control.active;
       }
 
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
-    [activeId, items]
+    [control.active, items]
   );
 
   function handleAddColumn() {
@@ -301,32 +329,33 @@ export const useBoard = () => {
     const newContainerId = nanoid();
 
     unstable_batchedUpdates(() => {
-      setContainersIds([...containersIds, newContainerId]);
-      setItems({ ...items, [newContainerId]: [] });
-      setContainers([
-        ...containers,
-        {
-          color: "red",
-          id: newContainerId,
-          name: `Coluna ${containers.length + 1}`,
-        },
-      ]);
+      const update = {
+        items: { ...items, [newContainerId]: [] },
+        containersIds: [...containersIds, newContainerId],
+        containers: [
+          ...containers,
+          {
+            color: "red",
+            id: newContainerId,
+            name: `Coluna ${containers.length + 1}`,
+          },
+        ],
+      };
+
+      set(update);
+      socket?.emit("update:board", JSON.stringify(update));
     });
   }
 
   const dropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
-      styles: {
-        active: {
-          opacity: "0.5",
-        },
-      },
+      styles: { active: { opacity: "0.5" } },
     }),
   };
 
   const handleGetBoard = useCallback(async () => {
     try {
-      setLoading(true);
+      setControl((prev) => ({ ...prev, loading: true }));
 
       const board = await getBoard(id as string);
 
@@ -334,7 +363,8 @@ export const useBoard = () => {
         return;
       }
 
-      setBoardName(board.name);
+      set(() => ({ board: { id: board.id, name: board.name } }));
+
       fillBoard(board);
     } catch (error) {
       toast({
@@ -342,65 +372,11 @@ export const useBoard = () => {
         description: "O quadro que você tentou acessar não existe.",
       });
 
-      console.log(error);
-
       router.push("/boards");
     } finally {
-      setLoading(false);
+      setControl((prev) => ({ ...prev, loading: false }));
     }
-  }, [id, fillBoard, toast, router]);
-
-  const handleUpdate = useCallback(async () => {
-    try {
-      if (!user?.id) {
-        return;
-      }
-
-      setSaveLoading(true);
-
-      const cardsToUpdate = Object.keys(items).reduce<
-        Array<{
-          columnId: UniqueIdentifier;
-          id: UniqueIdentifier;
-          content: string;
-          userId: string;
-        }>
-      >((acc, curr) => {
-        const item = items[curr];
-        return acc.concat(
-          item.map((id) => {
-            const card = cards.find((entry) => entry.id === id) as CardProps;
-
-            return {
-              columnId: curr,
-              id,
-              content: card?.content,
-              userId: user.id,
-            };
-          })
-        );
-      }, []);
-
-      await updateBoard(id as string, {
-        cards: cardsToUpdate,
-        columns: containersIds.map((column, index) => {
-          const container = containers.find(
-            (item) => item.id === column
-          ) as ContainerProps;
-
-          return {
-            id: container.id,
-            name: container.name,
-            position: index,
-          };
-        }),
-      });
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setSaveLoading(false);
-    }
-  }, [cards, containers, containersIds, id, items, user?.id]);
+  }, [id, set, fillBoard, toast, router]);
 
   useEffect(() => {
     return () => {
@@ -409,45 +385,54 @@ export const useBoard = () => {
   }, [reset]);
 
   useEffect(() => {
+    socket?.on("connect", () => {
+      socket.on("welcome", (welcomeId) => {
+        console.log({ welcomeId, socketId: socket.id, name: board.name });
+
+        if (welcomeId === socket.id || !board.name) {
+          return;
+        }
+
+        socket.emit("connect:update_board", {
+          welcomeId,
+          board: { items, cards, containers, containersIds },
+        });
+      });
+    });
+  }, [board.name, cards, containers, containersIds, items, socket]);
+
+  useEffect(() => {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });
 
     if (addedFirstColumn.current) {
-      setLoading(false);
+      setControl((prev) => ({ ...prev, loading: false }));
       return;
     }
 
     handleGetBoard();
 
     addedFirstColumn.current = true;
-    setLoading(true);
-  }, [
-    items,
-    setItems,
-    containers,
-    setContainers,
-    handleGetBoard,
-    setContainersIds,
-  ]);
+    setControl((prev) => ({ ...prev, loading: true }));
+  }, [handleGetBoard]);
 
   return {
     id,
+    board,
     items,
     sensors,
-    loading,
-    activeId,
-    boardName,
-    saveLoading,
-    handleUpdate,
+    control,
     onDragCancel,
     dropAnimation,
     handleDragEnd,
+    containersIds,
+    handleGetBoard,
     handleDragOver,
     PLACEHOLDER_ID,
-    containersIds,
     handleDragStart,
     handleAddColumn,
+    loadingSocketClient,
     collisionDetectionStrategy,
   };
 };
