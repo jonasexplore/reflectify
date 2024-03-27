@@ -42,7 +42,7 @@ export async function GET(
   io.on("connect", (socket) => {
     const roomId = socket.handshake.query.roomId as string;
     console.log("socket connect", socket.id, "at", roomId);
-    socket.broadcast.emit("welcome", `Welcome ${socket.id}`);
+    socket.broadcast.emit("welcome", socket.id);
 
     const metadata = {
       id: socket.id,
@@ -52,13 +52,38 @@ export async function GET(
     socket.join(roomId);
     clients.set(socket, metadata);
 
-    socket.on("disconnect", async () => {
-      const client = clients.get(socket);
-
-      if (client) {
-        socket.to(client.roomId).emit("disconnect:player", client?.id);
+    socket.on("connect:update_board", (payload) => {
+      if (clients.size <= 1) {
+        return;
       }
 
+      const { welcomeId, board } = payload;
+      const client = clients.get(socket);
+
+      if (!client) {
+        return;
+      }
+
+      setTimeout(
+        () =>
+          socket
+            .to(welcomeId)
+            .emit("update:board_updated", JSON.stringify(board)),
+        1000
+      );
+    });
+
+    socket.on("update:board", (payload) => {
+      const client = clients.get(socket);
+
+      if (!client) {
+        return;
+      }
+
+      socket.to(client.roomId).emit("update:board_updated", payload);
+    });
+
+    socket.on("disconnect", async () => {
       console.log("socket disconnect", socket.id);
       clients.delete(socket);
     });
@@ -67,13 +92,7 @@ export async function GET(
   Object.assign(res, { socket: { server: { io } } });
 
   return NextResponse.json(
-    {
-      success: true,
-      message: "Socket is started",
-      socket: `:${PORT}`,
-    },
-    {
-      status: 201,
-    }
+    { success: true, message: "Socket is started", socket: `:${PORT}` },
+    { status: 201 }
   );
 }
