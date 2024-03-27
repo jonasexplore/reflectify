@@ -7,24 +7,16 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 import { PlusIcon } from "@heroicons/react/20/solid";
-import { MousePointer2, Save } from "lucide-react";
 
-import { Separator } from "@/components/ui/separator";
-
+import { BoardHeader } from "./components/BoardHeader";
 import { useBoard } from "./hooks/useBoard";
-import { useSocketClient } from "./hooks/useSocketClient";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
 
 export const Board = () => {
   const {
-    id,
     items,
     sensors,
-    loading,
-    activeId,
-    boardName,
-    saveLoading,
-    handleUpdate,
+    control,
     onDragCancel,
     handleDragEnd,
     dropAnimation,
@@ -33,43 +25,17 @@ export const Board = () => {
     PLACEHOLDER_ID,
     handleDragStart,
     handleAddColumn,
+    loadingSocketClient,
     collisionDetectionStrategy,
   } = useBoard();
 
-  const { loading: loadingSocketClient } = useSocketClient({
-    roomId: id as string,
-  });
-
-  if (loading || loadingSocketClient) {
+  if (control.loading || loadingSocketClient) {
     return <BoardLoaderSkeleton />;
   }
 
   return (
     <div className="flex flex-col gap-2 flex-1">
-      <div>
-        <div className="flex items-center justify-between gap-3 p-2 rounded-lg">
-          <div>
-            <span className="text-lg font-bold">{boardName}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              Salvo automaticamente às 21:34
-            </span>
-            <button
-              className="flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100"
-              onClick={handleUpdate}
-              disabled={saveLoading}
-            >
-              <Save
-                className={`w-4 h-4 ${saveLoading ? "animate-pulse" : ""}`}
-              />
-              Salvar
-            </button>
-          </div>
-        </div>
-        <Separator />
-      </div>
-
+      <BoardHeader />
       <DndContext
         sensors={sensors}
         onDragEnd={handleDragEnd}
@@ -103,10 +69,10 @@ export const Board = () => {
           </SortableContext>
         </div>
         <DragOverlay adjustScale={false} dropAnimation={dropAnimation}>
-          {activeId && containersIds.includes(activeId) ? (
-            <Container id={activeId} containers={items[activeId]} />
+          {control.active && containersIds.includes(control.active) ? (
+            <Container id={control.active} containers={items[control.active]} />
           ) : (
-            activeId && <SortableItem id={activeId} />
+            control.active && <SortableItem id={control.active} />
           )}
         </DragOverlay>
       </DndContext>
