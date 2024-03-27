@@ -1,3 +1,4 @@
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { MoreHorizontal } from "lucide-react";
 
 import {
@@ -14,8 +15,13 @@ export const MoreOptions = () => {
         <MoreHorizontal className="w-4 h-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => {}}>Editar</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => {}}>Excluir</DropdownMenuItem>
+        <DropdownMenuItem className="flex gap-2" onClick={() => {}}>
+          <PencilSquareIcon className="w-4 h-4" />
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem className="flex gap-2" onClick={() => {}}>
+          <TrashIcon className="w-4 h-4" /> Excluir
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,35 +1,41 @@
 import { useEffect, useState } from "react";
+import { unstable_batchedUpdates } from "react-dom";
 import { io } from "socket.io-client";
 
 const PORT = Number(process.env.SOCKET_PORT ?? 3005);
 
-type SocketClientProps = {
-  roomId: string;
-};
-
-export const useSocketClient = ({ roomId }: SocketClientProps) => {
+export const useSocketClient = ({ set, board }: any) => {
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!roomId) {
+    if (!board.id) {
       return;
     }
 
-    const socket = io(`:${PORT}`, {
+    const client = io(`:${PORT}`, {
       path: `/api/socket`,
       addTrailingSlash: false,
-      query: { roomId },
+      query: { roomId: board.id },
     });
 
-    socket.on("connect", () => {
-      console.log("Connected");
+    set({ socket: client });
+
+    client.on("connect", () => {
       setLoading(false);
+
+      client.on("update:board_updated", (payload) => {
+        const result = JSON.parse(payload);
+        console.log(result);
+
+        unstable_batchedUpdates(() => {
+          set(result);
+        });
+      });
     });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected");
-    });
+    client.on("disconnect", () => {});
 
-    socket.on("connect_error", async (err) => {
+    client.on("connect_error", async (err) => {
       console.log(`connect_error due to ${err.message}`);
       try {
         await fetch("/api/socket");
@@ -39,9 +45,9 @@ export const useSocketClient = ({ roomId }: SocketClientProps) => {
     });
 
     return () => {
-      socket.disconnect();
+      client.disconnect();
     };
-  }, [roomId]);
+  }, [board.id]);
 
   return { loading };
 };

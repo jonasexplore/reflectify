@@ -1,4 +1,5 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { Socket } from "socket.io-client";
 import { create } from "zustand";
 
 import { BoardProps, CardProps } from "@/types/board";
@@ -12,6 +13,15 @@ export type ContainerProps = {
 export type ItemsProps = Record<string, UniqueIdentifier[]>;
 
 type StoreProps = {
+  set: (
+    partial:
+      | StoreProps
+      | Partial<StoreProps>
+      | ((state: StoreProps) => StoreProps | Partial<StoreProps>),
+    replace?: boolean | undefined
+  ) => void;
+  socket: Socket | null;
+  board: Pick<BoardProps, "id" | "name">;
   cards: CardProps[];
   fillBoard: (values: BoardProps) => void;
   setCards: (values: CardProps[]) => void;
@@ -28,6 +38,9 @@ type StoreProps = {
 };
 
 export const useStoreBoard = create<StoreProps>((set) => ({
+  set,
+  socket: null,
+  board: { id: "", name: "" },
   cards: [],
   setCards: (value) => set({ cards: value }),
   fillBoard: (value) =>

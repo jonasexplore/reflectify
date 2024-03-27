@@ -7,7 +7,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as z from "zod";
 
 import { toast } from "@/components/ui/use-toast";
-import { useStoreBoard } from "@/store";
+import { useStoreAuth, useStoreBoard } from "@/store";
+import { createQueryString } from "@/utils/create-query-string";
 
 type Props = {
   id: UniqueIdentifier;
@@ -20,8 +21,17 @@ export const useContainer = ({ id, containers }: Props) => {
   const searchParams = useSearchParams();
   const open = Boolean(searchParams.get("newMessageModalIsOpen"));
   const containerId = searchParams.get("c") as UniqueIdentifier;
-  const { addCard, removeCard, containersIds, removeContainer } =
-    useStoreBoard();
+  const boardId = searchParams.get("id") as string;
+  const { user } = useStoreAuth();
+  const {
+    set,
+    items,
+    cards,
+    removeCard,
+    containersIds,
+    removeContainer,
+    socket,
+  } = useStoreBoard();
 
   const {
     setNodeRef,
@@ -44,34 +54,17 @@ export const useContainer = ({ id, containers }: Props) => {
       .max(512, "A mesagem deve ter no máximo 512 caracteres"),
   });
 
-  const createQueryString = useCallback(
-    (keys: string[], values: (string | null)[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      keys.forEach((key, index) => {
-        if (!values[index]) {
-          params.delete(key);
-          return;
-        }
-
-        params.set(key, String(values[index]));
-      });
-
-      return params.toString();
-    },
-    [searchParams]
-  );
-
   const setOpen = useCallback(
     (value: boolean) => {
       router.push(
         `${pathname}?${createQueryString(
+          searchParams,
           ["c", "newMessageModalIsOpen"],
           [value ? String(id) : null, value ? String(value) : null]
         )}`
       );
     },
-    [createQueryString, id, pathname, router]
+    [id, pathname, router, searchParams]
   );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -85,16 +78,27 @@ export const useContainer = ({ id, containers }: Props) => {
       return;
     }
 
-    addCard(containerId, {
-      columnId: containerId,
+    const card = {
+      boardId,
+      likes: [],
       comments: [],
       id: nanoid(),
-      likes: [],
+      columnId: containerId,
       content: values.message,
-    });
+      userId: user?.id as string,
+    };
+
+    const update = {
+      cards: [...cards, card],
+      items: { ...items, [containerId]: [...items[containerId], card.id] },
+    };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
 
     router.push(
       `${pathname}?${createQueryString(
+        searchParams,
         ["c", "newMessageModalIsOpen"],
         [null, null]
       )}`

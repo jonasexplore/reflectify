@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("userId") as string;
 
   if (!userId) {
-    NextResponse.json({}, { status: 404 });
+    return NextResponse.json({}, { status: 404 });
   }
 
   const boards = await prisma.board.findMany({
