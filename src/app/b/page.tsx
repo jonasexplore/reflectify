@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { withAuth } from "@/components/ui/with-auth";
-
 import Loading from "../boards/loading";
 
 import { Board } from "./components/board";
@@ -16,4 +14,4 @@ function BoardId() {
   return isClient ? <Board /> : <Loading />;
 }
 
-export default withAuth(BoardId);
+export default BoardId;

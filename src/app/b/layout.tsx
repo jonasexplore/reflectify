@@ -7,7 +7,7 @@ export default function BoardLayout({
 }>) {
   return (
     <div className="flex flex-col gap-4 p-4 h-full">
-      <Navbar />
+      <Navbar hideNavigationMenu />
       {children}
     </div>
   );
