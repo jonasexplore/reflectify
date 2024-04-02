@@ -64,13 +64,7 @@ export async function GET(
         return;
       }
 
-      setTimeout(
-        () =>
-          socket
-            .to(welcomeId)
-            .emit("update:board_updated", JSON.stringify(board)),
-        1000
-      );
+      socket.to(welcomeId).emit("update:board_updated", JSON.stringify(board));
     });
 
     socket.on("update:board", (payload) => {
