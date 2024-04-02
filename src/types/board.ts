@@ -22,7 +22,7 @@ export type CommentProps = {
   timestamp: string;
   boardId: string;
   userId: string;
-  cardId: string;
+  cardId: UniqueIdentifier;
   commentLikes: LikeCommentProps[];
 };
 
