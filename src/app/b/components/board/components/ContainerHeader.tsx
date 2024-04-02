@@ -22,28 +22,35 @@ export const ContainerHeader = ({
   isDragging,
   handlerDelete,
 }: Props) => {
-  const { containerName, handleChange } = useContainerHeader({ id });
+  const { containerName, handleChange, isCreator } = useContainerHeader({ id });
 
   return (
     <div className={`flex justify-between p-2`}>
-      <input
-        className="bg-container font-bold cursor-text"
-        type="text"
-        value={containerName}
-        onChange={handleChange}
-      />
-      <div className="flex gap-2">
-        <TrashIcon
-          onClick={() => handlerDelete(id)}
-          className="h-5 w-5 text-red-400 cursor-pointer"
-        />
-        <DragHandleDots2Icon
-          style={{ cursor: isDragging ? "grabbing" : "grab" }}
-          className="h-5 w-5"
-          {...attributes}
-          {...listeners}
-        />
-      </div>
+      {!isCreator && (
+        <span className="bg-container font-bold">{containerName}</span>
+      )}
+      {isCreator && (
+        <>
+          <input
+            className="bg-container font-bold cursor-text"
+            type="text"
+            value={containerName}
+            onChange={handleChange}
+          />
+          <div className="flex gap-2">
+            <TrashIcon
+              onClick={() => handlerDelete(id)}
+              className="h-5 w-5 text-red-400 cursor-pointer"
+            />
+            <DragHandleDots2Icon
+              style={{ cursor: isDragging ? "grabbing" : "grab" }}
+              className="h-5 w-5"
+              {...attributes}
+              {...listeners}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

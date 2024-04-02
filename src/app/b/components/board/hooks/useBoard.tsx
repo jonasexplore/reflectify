@@ -22,10 +22,13 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { useToast } from "@/components/ui/use-toast";
 import { getBoard } from "@/services/boards";
-import { ItemsProps, useStoreBoard } from "@/store";
+import { getUser } from "@/services/users";
+import { ItemsProps, useStoreAuth, useStoreBoard } from "@/store";
+import { CardProps } from "@/types/board";
 
 import { useSocketClient } from "./useSocketClient";
 
@@ -49,21 +52,15 @@ type ControlStateBoard = {
 
 export const useBoard = () => {
   const { toast } = useToast();
-  const {
-    set,
-    items,
-    reset,
-    cards,
-    board,
-    socket,
-    fillBoard,
-    containers,
-    containersIds,
-  } = useStoreBoard();
+  const { user, setUser } = useStoreAuth();
+  const session = useSession();
+  const { set, items, cards, board, socket, containers, containersIds } =
+    useStoreBoard();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { loading: loadingSocketClient } = useSocketClient({ set, board });
   const id = searchParams.get("id");
+  const isCreator = user?.id === board.userId;
 
   const addedFirstColumn = useRef(false);
   const recentlyMovedToNewContainer = useRef(false);
@@ -363,9 +360,28 @@ export const useBoard = () => {
         return;
       }
 
-      set(() => ({ board: { id: board.id, name: board.name } }));
+      const update = {
+        board: { id: board.id, name: board.name, userId: board.userId },
+        containersIds: board.columns.map((column) => column.id),
+        containers: board.columns.map((column) => ({
+          color: "red",
+          id: column.id,
+          name: column.name,
+        })),
+        items: board.columns.reduce(
+          (acc, curr) =>
+            Object.assign(acc, {
+              [curr.id]: curr.cards.map((card) => card.id),
+            }),
+          {}
+        ),
+        cards: board.columns.reduce<CardProps[]>(
+          (acc, curr) => acc.concat(curr.cards),
+          []
+        ),
+      };
 
-      fillBoard(board);
+      set(update);
     } catch (error) {
       toast({
         title: "Quadro não encontrato",
@@ -376,27 +392,42 @@ export const useBoard = () => {
     } finally {
       setControl((prev) => ({ ...prev, loading: false }));
     }
-  }, [id, set, fillBoard, toast, router]);
+  }, [id, set, toast, router]);
+
+  const authenticateUserOnBoard = useCallback(async () => {
+    if (session?.status === "authenticated" && session?.data?.user?.email) {
+      const output = await getUser(session.data.user.email);
+
+      if (output) {
+        setUser(output.id);
+      }
+
+      return;
+    }
+
+    setUser(nanoid());
+  }, [session?.data?.user?.email, session?.status, setUser]);
 
   useEffect(() => {
     return () => {
-      reset();
+      set({
+        items: {},
+        cards: [],
+        containers: [],
+        containersIds: [],
+      });
     };
-  }, [reset]);
+  }, [set]);
 
   useEffect(() => {
-    socket?.on("connect", () => {
-      socket.on("welcome", (welcomeId) => {
-        console.log({ welcomeId, socketId: socket.id, name: board.name });
+    socket?.on("welcome", (welcomeId) => {
+      if (welcomeId === socket.id || !board.name) {
+        return;
+      }
 
-        if (welcomeId === socket.id || !board.name) {
-          return;
-        }
-
-        socket.emit("connect:update_board", {
-          welcomeId,
-          board: { items, cards, containers, containersIds },
-        });
+      socket.emit("connect:update_board", {
+        welcomeId,
+        board: { items, cards, containers, containersIds },
       });
     });
   }, [board.name, cards, containers, containersIds, items, socket]);
@@ -417,12 +448,17 @@ export const useBoard = () => {
     setControl((prev) => ({ ...prev, loading: true }));
   }, [handleGetBoard]);
 
+  useEffect(() => {
+    authenticateUserOnBoard();
+  }, [authenticateUserOnBoard]);
+
   return {
     id,
     board,
     items,
     sensors,
     control,
+    isCreator,
     onDragCancel,
     dropAnimation,
     handleDragEnd,

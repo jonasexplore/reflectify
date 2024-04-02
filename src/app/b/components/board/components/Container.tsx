@@ -39,7 +39,7 @@ export const Container = ({ id, containers, ...props }: Props) => {
     setNodeRef,
     handlerDelete,
     handlerDeleteCard,
-  } = useContainer({ id, containers });
+  } = useContainer({ id, data: containers });
 
   return (
     <div
@@ -66,7 +66,7 @@ export const Container = ({ id, containers, ...props }: Props) => {
         className="flex gap-2 items-center justify-center cursor-pointer rounded-xl border border-dashed p-4 border-slate-300"
       >
         <PlusIcon className="w-4 h-4" />
-        Adicionar
+        Novo card
       </button>
 
       <div className="flex flex-col gap-2">

@@ -12,10 +12,10 @@ import { createQueryString } from "@/utils/create-query-string";
 
 type Props = {
   id: UniqueIdentifier;
-  containers: UniqueIdentifier[];
+  data: UniqueIdentifier[];
 };
 
-export const useContainer = ({ id, containers }: Props) => {
+export const useContainer = ({ id, data }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -23,15 +23,8 @@ export const useContainer = ({ id, containers }: Props) => {
   const containerId = searchParams.get("c") as UniqueIdentifier;
   const boardId = searchParams.get("id") as string;
   const { user } = useStoreAuth();
-  const {
-    set,
-    items,
-    cards,
-    removeCard,
-    containersIds,
-    removeContainer,
-    socket,
-  } = useStoreBoard();
+  const { set, items, cards, containers, containersIds, socket, board } =
+    useStoreBoard();
 
   const {
     setNodeRef,
@@ -42,7 +35,7 @@ export const useContainer = ({ id, containers }: Props) => {
     isDragging,
   } = useSortable({
     id,
-    data: { type: "container", children: containers },
+    data: { type: "container", children: data },
     animateLayoutChanges: (args) =>
       defaultAnimateLayoutChanges({ ...args, wasDragging: true }),
   });
@@ -114,11 +107,30 @@ export const useContainer = ({ id, containers }: Props) => {
       return;
     }
 
-    removeContainer(containerId);
+    delete items[containerId];
+
+    const update = {
+      items,
+      cards: cards.filter((item) => item.columnId !== containerId),
+      containers: containers.filter((item) => item.id !== containerId),
+      containersIds: containersIds.filter((id) => id !== containerId),
+    };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
   }
 
   function handlerDeleteCard(cardId: UniqueIdentifier) {
-    removeCard(id, cardId);
+    const update = {
+      cards: cards.filter((card) => card.id !== cardId),
+      items: {
+        ...items,
+        [id]: items[id].filter((id) => id !== cardId),
+      },
+    };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
   }
 
   const style = {
