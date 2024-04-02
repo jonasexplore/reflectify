@@ -16,25 +16,36 @@ import {
 export const Profile = () => {
   const { data: session } = useSession();
 
+  const userIsLogout = !session?.user?.email;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex gap-2 items-center">
         <Avatar>
           <AvatarImage src={session?.user?.image ?? undefined} />
-          <AvatarFallback>{session?.user?.name?.[0]}</AvatarFallback>
+          <AvatarFallback>{session?.user?.name?.[0] ?? "A"}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => signOut({ callbackUrl: "http://localhost:3000/" })}
-          className="flex gap-2 cursor-pointer"
-        >
-          <ExitIcon className="w-4 h-4" />
-          <span>Sair</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+
+      {!userIsLogout && (
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => signOut({ callbackUrl: "http://localhost:3000/" })}
+            className="flex gap-2 cursor-pointer"
+          >
+            <ExitIcon className="w-4 h-4" />
+            <span>Sair</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      )}
+
+      {userIsLogout && (
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Usuário anônimo</DropdownMenuLabel>
+        </DropdownMenuContent>
+      )}
     </DropdownMenu>
   );
 };
