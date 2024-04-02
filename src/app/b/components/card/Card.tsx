@@ -31,8 +31,8 @@ export const Card = ({
   attributes,
   handlerDeleteCard,
 }: Props) => {
-  const { liked, isOpen, setLiked, setIsOpen } = useCard({
-    id: card?.id,
+  const { liked, isOpen, setLiked, setIsOpen, isCreator } = useCard({
+    card,
   });
 
   return (
@@ -65,12 +65,14 @@ export const Card = ({
             <ChatBubbleOvalLeftIcon className="h-4 w-4" />
           </button>
         </CollapsibleTrigger>
-        <button
-          onClick={() => handlerDeleteCard?.(card.id)}
-          className="flex gap-1 items-center text-sm cursor-pointer"
-        >
-          <TrashIcon className="h-4 w-4 cursor-pointer text-red-400" />
-        </button>
+        {isCreator && (
+          <button
+            onClick={() => handlerDeleteCard?.(card.id)}
+            className="flex gap-1 items-center text-sm cursor-pointer"
+          >
+            <TrashIcon className="h-4 w-4 cursor-pointer text-red-400" />
+          </button>
+        )}
         <button
           className="flex gap-1 items-center text-sm cursor-grab"
           onClick={() => setIsOpen(false)}

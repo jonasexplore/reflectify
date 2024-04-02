@@ -1,18 +1,24 @@
 import { useState } from "react";
-import { UniqueIdentifier } from "@dnd-kit/core";
+
+import { useStoreAuth } from "@/store";
+import { CardProps } from "@/types/board";
 
 type Props = {
-  id: UniqueIdentifier;
+  card: CardProps;
 };
 
-export const useCard = ({ id }: Props) => {
+export const useCard = ({ card }: Props) => {
+  const { user } = useStoreAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [liked, setLiked] = useState(false);
+
+  const isCreator = card?.userId === user?.id;
 
   return {
     liked,
     isOpen,
     setLiked,
     setIsOpen,
+    isCreator,
   };
 };

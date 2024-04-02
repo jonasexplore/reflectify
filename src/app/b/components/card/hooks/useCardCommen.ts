@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const useCardComment = ({ id }: Props) => {
-  const { cards, setCards } = useStoreBoard();
+  const { cards, set, socket } = useStoreBoard();
   const { user } = useStoreAuth();
 
   const [comment, setComment] = useState("");
@@ -19,8 +19,8 @@ export const useCardComment = ({ id }: Props) => {
       return;
     }
 
-    setCards(
-      cards.map((card) => {
+    const update = {
+      cards: cards.map((card) => {
         if (card.id !== id) {
           return card;
         }
@@ -32,14 +32,20 @@ export const useCardComment = ({ id }: Props) => {
             {
               content: comment,
               id: nanoid(),
-              likes: [],
-              timesteamp: new Date().toISOString(),
+              boardId: card.boardId,
+              cardId: card.id,
+              commentLikes: [],
+              timestamp: new Date().toISOString(),
               userId: user.id,
             },
           ],
         };
-      })
-    );
+      }),
+    };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
+
     setComment("");
   }
 
