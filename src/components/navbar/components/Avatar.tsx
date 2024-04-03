@@ -32,7 +32,10 @@ export const Profile = () => {
           <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => signOut({ callbackUrl: "http://localhost:3000/" })}
+            onClick={() => {
+              localStorage.removeItem("identifier");
+              signOut({ callbackUrl: "http://localhost:3000/" });
+            }}
             className="flex gap-2 cursor-pointer"
           >
             <ExitIcon className="w-4 h-4" />

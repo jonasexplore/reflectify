@@ -399,13 +399,21 @@ export const useBoard = () => {
       const output = await getUser(session.data.user.email);
 
       if (output) {
+        localStorage.setItem("identifier", output.id);
         setUser(output.id);
       }
 
       return;
     }
 
-    setUser(nanoid());
+    let identifier = localStorage.getItem("identifier");
+
+    if (!identifier) {
+      identifier = nanoid();
+      localStorage.setItem("identifier", identifier);
+    }
+
+    setUser(identifier);
   }, [session?.data?.user?.email, session?.status, setUser]);
 
   useEffect(() => {
