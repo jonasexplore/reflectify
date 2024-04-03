@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { HeartIcon } from "@heroicons/react/20/solid";
-import dayjs from "dayjs";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CommentProps } from "@/types/board";
@@ -16,14 +15,11 @@ export const CardCommentItem = ({ comment }: Props) => {
     <div className="flex flex-col gap-4 rounded-2xl bg-container p-2">
       <div className="flex gap-4 items-start">
         <Avatar>
-          <AvatarFallback>JB</AvatarFallback>
+          <AvatarFallback>A</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <span className="text-sm">{comment.content}</span>
           <div className="flex justify-end items-center gap-2">
-            <span className="text-sm">
-              {dayjs(comment.timestamp).format("HH:mm")}
-            </span>
             <span className="text-sm font-semibold">
               {comment.commentLikes.length}
             </span>

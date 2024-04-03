@@ -23,7 +23,7 @@ export const useContainer = ({ id, data }: Props) => {
   const containerId = searchParams.get("c") as UniqueIdentifier;
   const boardId = searchParams.get("id") as string;
   const { user } = useStoreAuth();
-  const { set, items, cards, containers, containersIds, socket, board } =
+  const { set, items, cards, containers, containersIds, socket } =
     useStoreBoard();
 
   const {
@@ -49,7 +49,7 @@ export const useContainer = ({ id, data }: Props) => {
 
   const setOpen = useCallback(
     (value: boolean) => {
-      router.push(
+      router.replace(
         `${pathname}?${createQueryString(
           searchParams,
           ["c", "newMessageModalIsOpen"],
