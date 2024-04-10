@@ -13,7 +13,7 @@ export const useBoards = () => {
   const queryClient = useQueryClient();
 
   const searchParams = useSearchParams();
-  const open = Boolean(searchParams.get("createBoardModalIsOpen"));
+  const open = Boolean(searchParams.get("creating-board"));
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createBoard,
@@ -25,7 +25,7 @@ export const useBoards = () => {
       router.push(
         `${pathname}?${createQueryString(
           searchParams,
-          ["createBoardModalIsOpen"],
+          ["creating-board"],
           [null]
         )}`
       );
@@ -35,7 +35,7 @@ export const useBoards = () => {
   });
 
   const handleCreateBoard = useCallback(
-    async (value: { name: string; userId: string }) => {
+    async (value: { name: string; isPublic: boolean }) => {
       try {
         if (!user?.id) {
           return;
@@ -44,9 +44,10 @@ export const useBoards = () => {
         await mutateAsync({
           name: value.name,
           userId: user.id,
+          isPublic: value.isPublic,
         });
       } catch (error) {
-        console.error("erro", error);
+        console.error(error);
       }
     },
     [mutateAsync, user?.id]

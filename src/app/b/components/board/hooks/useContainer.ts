@@ -19,7 +19,7 @@ export const useContainer = ({ id, data }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const open = Boolean(searchParams.get("newMessageModalIsOpen"));
+  const open = Boolean(searchParams.get("new-card"));
   const containerId = searchParams.get("c") as UniqueIdentifier;
   const boardId = searchParams.get("id") as string;
   const { user } = useStoreAuth();
@@ -52,7 +52,7 @@ export const useContainer = ({ id, data }: Props) => {
       router.replace(
         `${pathname}?${createQueryString(
           searchParams,
-          ["c", "newMessageModalIsOpen"],
+          ["c", "new-card"],
           [value ? String(id) : null, value ? String(value) : null]
         )}`
       );
@@ -92,7 +92,7 @@ export const useContainer = ({ id, data }: Props) => {
     router.push(
       `${pathname}?${createQueryString(
         searchParams,
-        ["c", "newMessageModalIsOpen"],
+        ["c", "new-card"],
         [null, null]
       )}`
     );

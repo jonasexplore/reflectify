@@ -59,7 +59,7 @@ function Board() {
               router.push(
                 `${pathname}?${createQueryString(
                   searchParams,
-                  ["createBoardModalIsOpen"],
+                  ["creating-board"],
                   ["true"]
                 )}`
               );
@@ -77,7 +77,7 @@ function Board() {
             router.push(
               `${pathname}?${createQueryString(
                 searchParams,
-                ["createBoardModalIsOpen"],
+                ["creating-board"],
                 [value ? String(value) : null]
               )}`
             );
@@ -88,12 +88,10 @@ function Board() {
             <DialogHeader>
               <DialogTitle>Novo quadro</DialogTitle>
 
-              <div>
-                <BoardForm
-                  loadingButton={isPending}
-                  onSubmit={handleCreateBoard}
-                />
-              </div>
+              <BoardForm
+                loadingButton={isPending}
+                onSubmit={handleCreateBoard}
+              />
             </DialogHeader>
           </DialogContent>
         </Dialog>
