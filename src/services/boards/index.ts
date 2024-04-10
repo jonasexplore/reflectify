@@ -4,9 +4,22 @@ import { BoardProps } from "@/types/board";
 
 import { api } from "../api";
 
+type fetchBoardOutput = {
+  boards: Array<{
+    id: string;
+    name: string;
+    created: Date;
+    updated: Date;
+    isPublic: boolean;
+    userId: string;
+  }>;
+};
+
 export const fetchBoard = async (userId: string) => {
   try {
-    const output = await api.get("/boards", { params: { userId } });
+    const output = await api.get<fetchBoardOutput>("/boards", {
+      params: { userId },
+    });
 
     return output.data?.boards;
   } catch (error) {
@@ -22,7 +35,7 @@ export const getBoard = async (
   return output.data;
 };
 
-type CreateBoardInput = { name: string; userId: string };
+type CreateBoardInput = { name: string; userId: string; isPublic: boolean };
 type CreateBoardOutput = {
   id: string;
   name: string;
@@ -33,10 +46,12 @@ type CreateBoardOutput = {
 export const createBoard = async ({
   name,
   userId,
+  isPublic,
 }: CreateBoardInput): Promise<CreateBoardOutput> => {
   const output = await api.post("/boards", {
     name,
     userId,
+    isPublic,
   });
 
   return output.data;
