@@ -29,10 +29,11 @@ export async function POST(request: NextRequest) {
         id,
         name: body.name,
         userId: body.userId,
+        isPublic: body.isPublic,
         columns: {
           create: {
             id: nanoid(),
-            name: "Coluna 1",
+            name: "To do",
             position: 0,
           },
         },

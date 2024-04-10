@@ -24,6 +24,7 @@ model Board {
   name         String
   created      DateTime      @default(now())
   updated      DateTime      @updatedAt
+  isPublic     Boolean
   userId       String
   user         User          @relation(fields: [userId], references: [id])
   columns      BoardColumn[]
