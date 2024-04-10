@@ -16,12 +16,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   name: z
     .string()
     .min(3, "O nome do quadro deve ter pelo menos 2 caracteres")
     .max(64, "O nome do quadro deve ter no máximo 64 caracteres"),
+  isPublic: z.boolean().default(false),
 });
 
 type Props = {
@@ -34,6 +36,7 @@ export const BoardForm = ({ onSubmit, loadingButton }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      isPublic: false,
     },
   });
 
@@ -49,6 +52,27 @@ export const BoardForm = ({ onSubmit, loadingButton }: Props) => {
               <FormLabel>Nome</FormLabel>
               <FormControl>
                 <Input placeholder="Digite o nome do quadro" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Público</FormLabel>
+                <FormDescription>
+                  Permite que outras pessoas acessem seu quadro
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
