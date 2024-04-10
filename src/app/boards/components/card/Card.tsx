@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Badge } from "@/components/ui/badge";
 import { fetchBoard } from "@/services/boards";
 import { useStoreAuth } from "@/store";
 
@@ -31,7 +31,7 @@ export const BoardCards = () => {
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-      {data.map((item: any) => {
+      {data.map((item) => {
         return (
           <div
             key={item.id}
@@ -39,22 +39,24 @@ export const BoardCards = () => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between">
-                <span>{item.name}</span>
+                <button
+                  className="cursor-pointer"
+                  onClick={() => {
+                    router.push(`/b?id=${item.id}`);
+                  }}
+                >
+                  {item.name}
+                </button>
                 <MoreOptions />
               </div>
               <span className="text-sm text-muted-foreground">
                 {dayjs(item.created).format("DD MMM [de] YYYY [às] HH:mm")}
               </span>
             </div>
-            <button
-              className="flex gap-2 items-center cursor-pointer"
-              onClick={() => {
-                router.push(`/b?id=${item.id}`);
-              }}
-            >
-              <span className="font-bold">Acessar quadro</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+            <div>
+              <Badge>{item.isPublic ? "Público" : "Privado"}</Badge>
+            </div>
           </div>
         );
       })}
