@@ -28,9 +28,12 @@ export const fetchBoard = async (userId: string) => {
 };
 
 export const getBoard = async (
-  boardId: string
+  boardId: string,
+  userId: string
 ): Promise<BoardProps | undefined> => {
-  const output = await api.get(`/boards/${boardId}`);
+  const output = await api.get(`/boards/${boardId}`, {
+    headers: { "user-id": userId },
+  });
 
   return output.data;
 };

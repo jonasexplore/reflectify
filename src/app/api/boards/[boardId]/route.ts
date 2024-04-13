@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -7,6 +8,8 @@ export async function GET(
   context: { params: { boardId: string } }
 ) {
   try {
+    const headersList = headers();
+    const userId = headersList.get("user-id");
     const boardId = context.params.boardId;
 
     if (!boardId) {
@@ -31,6 +34,10 @@ export async function GET(
 
     if (!board) {
       return NextResponse.json({}, { status: 404 });
+    }
+
+    if (!board.isPublic && userId !== board.userId) {
+      return NextResponse.json({}, { status: 403 });
     }
 
     const response = {

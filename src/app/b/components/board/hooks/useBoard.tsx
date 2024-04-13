@@ -354,7 +354,7 @@ export const useBoard = () => {
     try {
       setControl((prev) => ({ ...prev, loading: true }));
 
-      const board = await getBoard(id as string);
+      const board = await getBoard(id as string, user?.id ?? "");
 
       if (!board) {
         return;
@@ -392,7 +392,7 @@ export const useBoard = () => {
     } finally {
       setControl((prev) => ({ ...prev, loading: false }));
     }
-  }, [id, set, toast, router]);
+  }, [user?.id, id, set, toast, router]);
 
   const authenticateUserOnBoard = useCallback(async () => {
     if (session?.status === "authenticated" && session?.data?.user?.email) {
