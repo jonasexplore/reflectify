@@ -16,7 +16,7 @@ type UpdateCardInput = {
 export const useBoardHeader = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const { items, cards, containers, board } = useStoreBoard();
+  const { items, cards, containers, containersIds, board } = useStoreBoard();
   const { user } = useStoreAuth();
   const [loading, setLoading] = useState(false);
 
@@ -47,11 +47,15 @@ export const useBoardHeader = () => {
         []
       );
 
-      const columns = containers.map((item, index) => ({
-        id: item.id,
-        name: item.name,
-        position: index,
-      }));
+      const columns = containersIds.map((id, index) => {
+        const container = containers.find((item) => item.id === id);
+
+        return {
+          id: container?.id ?? "",
+          name: container?.name ?? "",
+          position: index,
+        };
+      });
 
       await updateBoard(id as string, {
         cards: cardsToUpdate,
@@ -62,7 +66,7 @@ export const useBoardHeader = () => {
     } finally {
       setLoading(false);
     }
-  }, [cards, containers, id, items, user?.id]);
+  }, [cards, containers, containersIds, id, items, user?.id]);
 
   return {
     board,
