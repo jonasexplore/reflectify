@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
@@ -8,9 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { fetchBoard } from "@/services/boards";
 import { useStoreAuth } from "@/store";
 
+import { SortKeys } from "../../hooks/useBoards";
+
 import { MoreOptions } from "./components/MoreOptions";
 
-export const BoardCards = () => {
+type Props = {
+  orderBy?: SortKeys;
+  search?: string;
+};
+
+export const BoardCards = ({ orderBy, search }: Props) => {
   const router = useRouter();
   const { user } = useStoreAuth();
 
@@ -19,6 +27,26 @@ export const BoardCards = () => {
     queryFn: () => fetchBoard(user?.id ?? ""),
     enabled: Boolean(user?.id),
   });
+
+  const filtered = useMemo(() => {
+    let items = data ?? [];
+
+    if (orderBy === "date") {
+      items.sort(
+        (a, b) => dayjs(b.created).valueOf() - dayjs(a.created).valueOf()
+      );
+    } else {
+      items.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    if (search) {
+      items = items?.filter((item) =>
+        item.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      );
+    }
+
+    return items;
+  }, [data, orderBy, search]);
 
   if (isPending) {
     return "Loading component";
@@ -31,7 +59,7 @@ export const BoardCards = () => {
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-      {data.map((item) => {
+      {filtered.map((item) => {
         return (
           <div
             key={item.id}
@@ -50,7 +78,7 @@ export const BoardCards = () => {
                 <MoreOptions />
               </div>
               <span className="text-sm text-muted-foreground">
-                {dayjs(item.created).format("DD MMM [de] YYYY [às] HH:mm")}
+                {dayjs(item.created).format("DD MMM [de] YYYY")}
               </span>
             </div>
 

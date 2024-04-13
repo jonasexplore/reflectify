@@ -1,10 +1,12 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { createBoard } from "@/services/boards";
 import { useStoreAuth } from "@/store";
 import { createQueryString } from "@/utils/create-query-string";
+
+export type SortKeys = "name" | "date";
 
 export const useBoards = () => {
   const router = useRouter();
@@ -14,6 +16,9 @@ export const useBoards = () => {
 
   const searchParams = useSearchParams();
   const open = Boolean(searchParams.get("creating-board"));
+
+  const [search, setSearch] = useState<string>("");
+  const [sort, setSort] = useState<SortKeys>("date");
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createBoard,
@@ -55,8 +60,12 @@ export const useBoards = () => {
 
   return {
     open,
+    sort,
     router,
+    search,
+    setSort,
     pathname,
+    setSearch,
     isPending,
     searchParams,
     createQueryString,

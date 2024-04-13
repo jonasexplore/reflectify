@@ -21,13 +21,17 @@ import { withAuth } from "@/components/ui/with-auth";
 
 import { BoardCards } from "./components/card/Card";
 import { BoardForm } from "./components/form";
-import { useBoards } from "./hooks/useBoards";
+import { SortKeys, useBoards } from "./hooks/useBoards";
 
 function Board() {
   const {
     open,
+    sort,
     router,
+    search,
+    setSort,
     pathname,
+    setSearch,
     isPending,
     searchParams,
     handleCreateBoard,
@@ -39,11 +43,17 @@ function Board() {
       <div className="w-full max-w-7xl">
         <div className="mb-4 flex justify-end items-center gap-3 flex-col md:flex-row">
           <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full"
             placeholder="Busque pelo nome do quadro..."
           />
           <div className="w-full md:w-auto min-w-[180px]">
-            <Select defaultValue="date">
+            <Select
+              value={sort}
+              onValueChange={(value: SortKeys) => setSort(value)}
+              defaultValue={sort}
+            >
               <SelectTrigger className="w-full ">
                 <SelectValue />
               </SelectTrigger>
@@ -70,7 +80,7 @@ function Board() {
           </Button>
         </div>
 
-        <BoardCards />
+        <BoardCards orderBy={sort} search={search} />
 
         <Dialog
           onOpenChange={(value) => {
