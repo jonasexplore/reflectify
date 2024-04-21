@@ -1,37 +1,47 @@
 import { nanoid } from "nanoid";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const email = searchParams.get("email") as string;
+import { authOptions } from "../auth/[...nextauth]/route";
 
-  if (!email) {
-    NextResponse.json({ message: "Invalid email" }, { status: 400 });
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json(null, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: session.user?.email ?? "" },
   });
 
   if (!user) {
-    NextResponse.json({ message: "User not found" }, { status: 404 });
+    return NextResponse.json(null, { status: 404 });
   }
 
   return NextResponse.json({ user }, { status: 200 });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const body = await request.json();
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(null, { status: 401 });
+    }
+
+    if (!session.user?.email) {
+      return NextResponse.json(null, { status: 409 });
+    }
 
     const id = nanoid();
 
     await prisma.user.create({
       data: {
         id,
-        email: body.email,
+        email: session.user?.email,
       },
     });
 

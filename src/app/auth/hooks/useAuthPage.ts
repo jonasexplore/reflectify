@@ -25,7 +25,7 @@ export const useAuthPage = ({ providers }: Props) => {
 
   const handleCreateAccount = useCallback(async () => {
     try {
-      const output = await createUser(session?.user?.email as string);
+      const output = await createUser();
 
       if (output) {
         setUser(output.id);
@@ -34,13 +34,13 @@ export const useAuthPage = ({ providers }: Props) => {
     } catch (error) {
       console.log(error);
     }
-  }, [router, session?.user?.email, setUser]);
+  }, [router, setUser]);
 
   const handleCheckUserExists = useCallback(async () => {
     try {
       setLoading((prev) => ({ ...prev, page: true }));
 
-      const output = await getUser(session?.user?.email as string);
+      const output = await getUser();
 
       if (!output) {
         await handleCreateAccount();
@@ -55,7 +55,7 @@ export const useAuthPage = ({ providers }: Props) => {
     } finally {
       setLoading((prev) => ({ ...prev, page: false, button: false }));
     }
-  }, [handleCreateAccount, router, session?.user?.email, setUser]);
+  }, [handleCreateAccount, router, setUser]);
 
   useEffect(() => {
     if (!session?.user) {

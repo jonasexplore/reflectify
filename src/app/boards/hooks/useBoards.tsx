@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { createBoard } from "@/services/boards";
-import { useStoreAuth } from "@/store";
 import { createQueryString } from "@/utils/create-query-string";
 
 export type SortKeys = "name" | "date";
@@ -11,7 +10,6 @@ export type SortKeys = "name" | "date";
 export const useBoards = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useStoreAuth();
   const queryClient = useQueryClient();
 
   const searchParams = useSearchParams();
@@ -23,7 +21,7 @@ export const useBoards = () => {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createBoard,
     onSuccess: (data) => {
-      queryClient.setQueryData(["boards", user?.id], (updater: any) => {
+      queryClient.setQueryData(["create-board"], (updater: any) => {
         return [...updater, data];
       });
 
@@ -42,10 +40,6 @@ export const useBoards = () => {
   const handleCreateBoard = useCallback(
     async (value: { name: string; isPublic: boolean }) => {
       try {
-        if (!user?.id) {
-          return;
-        }
-
         await mutateAsync({
           name: value.name,
           isPublic: value.isPublic,
@@ -54,7 +48,7 @@ export const useBoards = () => {
         console.error(error);
       }
     },
-    [mutateAsync, user?.id]
+    [mutateAsync]
   );
 
   return {

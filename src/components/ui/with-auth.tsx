@@ -26,7 +26,7 @@ export function withAuth(Component: any) {
           return;
         }
 
-        const output = await getUser(session.data.user.email);
+        const output = await getUser();
 
         if (output) {
           setUser(output.id);

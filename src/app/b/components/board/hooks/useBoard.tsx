@@ -365,7 +365,7 @@ export const useBoard = () => {
 
   const authenticateUserOnBoard = useCallback(async () => {
     if (session?.status === "authenticated" && session?.data?.user?.email) {
-      const output = await getUser(session.data.user.email);
+      const output = await getUser();
 
       if (output) {
         localStorage.setItem("identifier", output.id);
