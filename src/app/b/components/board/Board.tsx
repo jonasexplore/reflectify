@@ -6,7 +6,6 @@ import {
   horizontalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { PlusIcon } from "@heroicons/react/20/solid";
 
 import { BoardHeader } from "./components/BoardHeader";
 import { useBoard } from "./hooks/useBoard";
@@ -17,7 +16,6 @@ export const Board = () => {
     items,
     sensors,
     control,
-    isCreator,
     onDragCancel,
     handleDragEnd,
     dropAnimation,
@@ -25,7 +23,6 @@ export const Board = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
-    handleAddColumn,
     loadingSocketClient,
     collisionDetectionStrategy,
   } = useBoard();
@@ -59,16 +56,6 @@ export const Board = () => {
                 containers={items[container]}
               />
             ))}
-            {isCreator && (
-              <div className="flex items-center border border-dashed border-slate-600 rounded-xl mx-2">
-                <button
-                  className="flex flex-col gap-2 justify-center items-center m-2 "
-                  onClick={handleAddColumn}
-                >
-                  <PlusIcon className="w-4 h-4" /> Adicionar
-                </button>
-              </div>
-            )}
           </SortableContext>
         </div>
         <DragOverlay adjustScale={false} dropAnimation={dropAnimation}>

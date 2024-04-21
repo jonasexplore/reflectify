@@ -45,7 +45,7 @@ export const Container = ({ id, containers, ...props }: Props) => {
     <div
       {...props}
       ref={setNodeRef}
-      className={`flex flex-col gap-2 w-full bg-container rounded-xl p-2 ${
+      className={`flex flex-col gap-2 w-full max-w-sm bg-container rounded-lg p-2 ${
         props.className ?? ""
       }`}
       style={{
@@ -60,14 +60,8 @@ export const Container = ({ id, containers, ...props }: Props) => {
         isDragging={isDragging}
         attributes={attributes}
         handlerDelete={handlerDelete}
+        handleNewCard={() => setOpen(true)}
       />
-      <button
-        onClick={() => setOpen(true)}
-        className="flex gap-2 items-center justify-center cursor-pointer rounded-xl border border-dashed p-4 border-slate-300"
-      >
-        <PlusIcon className="w-4 h-4" />
-        Novo card
-      </button>
 
       <div className="flex flex-col gap-2">
         <SortableContext

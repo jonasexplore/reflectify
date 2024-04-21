@@ -39,9 +39,9 @@ export const Card = ({
     <Collapsible
       open={isOpen}
       onOpenChange={(value) => setIsOpen(value)}
-      className="rounded-xl p-2 flex flex-col gap-2 bg-card"
+      className="rounded-md px-3 py-2 flex flex-col gap-2 bg-card"
     >
-      <div className="break-all">{children}</div>
+      <div>{children}</div>
       <div className="flex justify-end items-center gap-4">
         <div className="flex gap-2">
           <button

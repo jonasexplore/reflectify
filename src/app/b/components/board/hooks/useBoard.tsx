@@ -313,37 +313,6 @@ export const useBoard = () => {
     [control.active, items]
   );
 
-  function handleAddColumn() {
-    if (containers.length >= 5) {
-      toast({
-        title: "Ação não permitida",
-        description: "O máximo de colunas foi atingido!",
-      });
-
-      return;
-    }
-
-    const newContainerId = nanoid();
-
-    unstable_batchedUpdates(() => {
-      const update = {
-        items: { ...items, [newContainerId]: [] },
-        containersIds: [...containersIds, newContainerId],
-        containers: [
-          ...containers,
-          {
-            color: "red",
-            id: newContainerId,
-            name: `Coluna ${containers.length + 1}`,
-          },
-        ],
-      };
-
-      set(update);
-      socket?.emit("update:board", JSON.stringify(update));
-    });
-  }
-
   const dropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
       styles: { active: { opacity: "0.5" } },
@@ -354,7 +323,7 @@ export const useBoard = () => {
     try {
       setControl((prev) => ({ ...prev, loading: true }));
 
-      const board = await getBoard(id as string, user?.id ?? "");
+      const board = await getBoard(id as string);
 
       if (!board) {
         return;
@@ -392,7 +361,7 @@ export const useBoard = () => {
     } finally {
       setControl((prev) => ({ ...prev, loading: false }));
     }
-  }, [user?.id, id, set, toast, router]);
+  }, [id, set, toast, router]);
 
   const authenticateUserOnBoard = useCallback(async () => {
     if (session?.status === "authenticated" && session?.data?.user?.email) {
@@ -475,7 +444,6 @@ export const useBoard = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
-    handleAddColumn,
     loadingSocketClient,
     collisionDetectionStrategy,
   };

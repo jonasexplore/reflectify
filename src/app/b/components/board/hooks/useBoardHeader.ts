@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
+import { unstable_batchedUpdates } from "react-dom";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 
+import { toast } from "@/components/ui/use-toast";
 import { updateBoard } from "@/services/boards";
 import { useStoreAuth, useStoreBoard } from "@/store";
 import { CardProps } from "@/types/board";
@@ -16,9 +19,41 @@ type UpdateCardInput = {
 export const useBoardHeader = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const { items, cards, containers, containersIds, board } = useStoreBoard();
+  const { items, cards, containers, containersIds, board, set, socket } =
+    useStoreBoard();
   const { user } = useStoreAuth();
   const [loading, setLoading] = useState(false);
+
+  function handleAddColumn() {
+    if (containers.length >= 5) {
+      toast({
+        title: "Ação não permitida",
+        description: "O máximo de colunas foi atingido!",
+      });
+
+      return;
+    }
+
+    unstable_batchedUpdates(() => {
+      const newContainerId = nanoid();
+
+      const update = {
+        items: { ...items, [newContainerId]: [] },
+        containersIds: [...containersIds, newContainerId],
+        containers: [
+          ...containers,
+          {
+            color: "red",
+            id: newContainerId,
+            name: `Coluna ${containers.length + 1}`,
+          },
+        ],
+      };
+
+      set(update);
+      socket?.emit("update:board", JSON.stringify(update));
+    });
+  }
 
   const handleUpdate = useCallback(async () => {
     try {
@@ -72,5 +107,6 @@ export const useBoardHeader = () => {
     board,
     loading,
     handleUpdate,
+    handleAddColumn,
   };
 };

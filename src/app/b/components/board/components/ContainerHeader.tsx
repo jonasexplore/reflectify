@@ -4,6 +4,7 @@ import { DraggableAttributes, UniqueIdentifier } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { PlusIcon } from "lucide-react";
 
 import { useContainerHeader } from "../hooks/useContainerHeader";
 
@@ -13,6 +14,7 @@ type Props = {
   attributes: DraggableAttributes;
   listeners?: SyntheticListenerMap;
   isDragging?: boolean;
+  handleNewCard: () => void;
 };
 
 export const ContainerHeader = ({
@@ -21,13 +23,22 @@ export const ContainerHeader = ({
   attributes,
   isDragging,
   handlerDelete,
+  handleNewCard,
 }: Props) => {
   const { containerName, handleChange, isCreator } = useContainerHeader({ id });
 
   return (
     <div className={`flex justify-between p-2`}>
       {!isCreator && (
-        <span className="bg-container font-bold">{containerName}</span>
+        <>
+          <span className="bg-container font-bold">{containerName}</span>
+          <div className="flex gap-2">
+            <PlusIcon
+              onClick={handleNewCard}
+              className="h-5 w-5  cursor-pointer"
+            />
+          </div>
+        </>
       )}
       {isCreator && (
         <>
@@ -38,6 +49,10 @@ export const ContainerHeader = ({
             onChange={handleChange}
           />
           <div className="flex gap-2">
+            <PlusIcon
+              onClick={handleNewCard}
+              className="h-5 w-5  cursor-pointer"
+            />
             <TrashIcon
               onClick={() => handlerDelete(id)}
               className="h-5 w-5 text-red-400 cursor-pointer"
