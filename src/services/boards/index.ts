@@ -15,11 +15,9 @@ type fetchBoardOutput = {
   }>;
 };
 
-export const fetchBoard = async (userId: string) => {
+export const fetchBoard = async () => {
   try {
-    const output = await api.get<fetchBoardOutput>("/boards", {
-      params: { userId },
-    });
+    const output = await api.get<fetchBoardOutput>("/boards");
 
     return output.data?.boards;
   } catch (error) {
@@ -28,17 +26,14 @@ export const fetchBoard = async (userId: string) => {
 };
 
 export const getBoard = async (
-  boardId: string,
-  userId: string
+  boardId: string
 ): Promise<BoardProps | undefined> => {
-  const output = await api.get(`/boards/${boardId}`, {
-    headers: { "user-id": userId },
-  });
+  const output = await api.get(`/boards/${boardId}`);
 
   return output.data;
 };
 
-type CreateBoardInput = { name: string; userId: string; isPublic: boolean };
+type CreateBoardInput = { name: string; isPublic: boolean };
 type CreateBoardOutput = {
   id: string;
   name: string;
@@ -48,12 +43,10 @@ type CreateBoardOutput = {
 };
 export const createBoard = async ({
   name,
-  userId,
   isPublic,
 }: CreateBoardInput): Promise<CreateBoardOutput> => {
   const output = await api.post("/boards", {
     name,
-    userId,
     isPublic,
   });
 

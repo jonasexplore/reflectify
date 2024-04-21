@@ -23,8 +23,8 @@ export const BoardCards = ({ orderBy, search }: Props) => {
   const { user } = useStoreAuth();
 
   const { isPending, error, data } = useQuery({
-    queryKey: ["boards", user?.id],
-    queryFn: () => fetchBoard(user?.id ?? ""),
+    queryKey: ["boards"],
+    queryFn: () => fetchBoard(),
     enabled: Boolean(user?.id),
   });
 

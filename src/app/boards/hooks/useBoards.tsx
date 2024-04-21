@@ -48,7 +48,6 @@ export const useBoards = () => {
 
         await mutateAsync({
           name: value.name,
-          userId: user.id,
           isPublic: value.isPublic,
         });
       } catch (error) {

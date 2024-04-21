@@ -1,15 +1,29 @@
-import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
+
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function GET(
   _: NextRequest,
   context: { params: { boardId: string } }
 ) {
   try {
-    const headersList = headers();
-    const userId = headersList.get("user-id");
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(null, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email ?? "" },
+    });
+
+    if (!user) {
+      return NextResponse.json(null, { status: 404 });
+    }
+
     const boardId = context.params.boardId;
 
     if (!boardId) {
@@ -33,11 +47,11 @@ export async function GET(
     });
 
     if (!board) {
-      return NextResponse.json({}, { status: 404 });
+      return NextResponse.json(null, { status: 404 });
     }
 
-    if (!board.isPublic && userId !== board.userId) {
-      return NextResponse.json({}, { status: 403 });
+    if (!board.isPublic && user.id !== board.userId) {
+      return NextResponse.json(null, { status: 401 });
     }
 
     const response = {
@@ -48,6 +62,11 @@ export async function GET(
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.log({ error });
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -61,6 +80,34 @@ export async function PUT(
     const { columns, cards } = body;
 
     const { boardId } = context.params;
+
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+    });
+
+    if (!board) {
+      return NextResponse.json(null, { status: 404 });
+    }
+
+    if (!board.isPublic) {
+      const session = await getServerSession(authOptions);
+
+      if (!session) {
+        return NextResponse.json(null, { status: 401 });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { email: session.user?.email ?? "" },
+      });
+
+      if (!user) {
+        return NextResponse.json(null, { status: 401 });
+      }
+
+      if (user.id !== board.userId) {
+        return NextResponse.json(null, { status: 401 });
+      }
+    }
 
     await prisma.card.deleteMany({ where: { boardId } });
     await prisma.boardColumn.deleteMany({ where: { boardId } });
