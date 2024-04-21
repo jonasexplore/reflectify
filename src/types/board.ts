@@ -50,5 +50,6 @@ export type BoardProps = {
   created: string;
   updated: string;
   userId: string;
+  isPublic: boolean;
   columns: ColumnProps[];
 };
