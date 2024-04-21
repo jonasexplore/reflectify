@@ -25,7 +25,6 @@ export const useSocketClient = ({ set, board }: any) => {
 
       client.on("update:board_updated", (payload) => {
         const result = JSON.parse(payload);
-        console.log(result);
 
         unstable_batchedUpdates(() => {
           set(result);
