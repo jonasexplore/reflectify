@@ -21,7 +21,7 @@ export const useBoards = () => {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createBoard,
     onSuccess: (data) => {
-      queryClient.setQueryData(["create-board"], (updater: any) => {
+      queryClient.setQueryData(["boards"], (updater: any) => {
         return [...updater, data];
       });
 
