@@ -1,6 +1,6 @@
 import type { Server as HTTPServer } from "http";
 import type { Socket as NetSocket } from "net";
-import type { NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import type { Server as IOServer } from "socket.io";
 
 type SocketServer = HTTPServer & {
@@ -11,6 +11,6 @@ type SocketWithIO = NetSocket & {
   server: SocketServer;
 };
 
-export type NextApiResponseWithSocket = NextApiResponse & {
+export type NextApiResponseWithSocket = NextResponse & {
   socket: SocketWithIO;
 };

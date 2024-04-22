@@ -1,5 +1,4 @@
-import { NextApiRequest } from "next";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Server, Socket } from "socket.io";
 
 import { NextApiResponseWithSocket } from "@/types/http";
@@ -14,10 +13,7 @@ export type ClientProps = {
 
 const clients = new Map<Socket, ClientProps>();
 
-export async function GET(
-  _req: NextApiRequest,
-  res: NextApiResponseWithSocket
-) {
+export async function GET(_req: NextRequest, res: NextApiResponseWithSocket) {
   if (res?.socket?.server?.io) {
     return NextResponse.json(
       {
