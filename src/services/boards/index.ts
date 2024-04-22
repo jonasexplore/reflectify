@@ -76,3 +76,13 @@ export const updateBoard = async (boardId: string, input: UpdateBoardProps) => {
     return {};
   }
 };
+
+export const deleteBoard = async (boardId: string): Promise<void> => {
+  try {
+    const output = await api.delete(`/boards/${boardId}`);
+
+    return output.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
