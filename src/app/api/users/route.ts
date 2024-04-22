@@ -10,7 +10,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json(null, { status: 401 });
+    return NextResponse.json({}, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
@@ -18,7 +18,7 @@ export async function GET() {
   });
 
   if (!user) {
-    return NextResponse.json(null, { status: 404 });
+    return NextResponse.json({}, { status: 404 });
   }
 
   return NextResponse.json({ user }, { status: 200 });
@@ -29,11 +29,11 @@ export async function POST() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     if (!session.user?.email) {
-      return NextResponse.json(null, { status: 409 });
+      return NextResponse.json({}, { status: 409 });
     }
 
     const id = nanoid();
