@@ -47,8 +47,8 @@ type ColumnProps = {
 export type BoardProps = {
   id: string;
   name: string;
-  created: string;
-  updated: string;
+  created: Date;
+  updated: Date;
   userId: string;
   isPublic: boolean;
   columns: ColumnProps[];
