@@ -41,8 +41,8 @@ export async function GET(
 
   io.on("connect", (socket) => {
     const roomId = socket.handshake.query.roomId as string;
-    console.log("socket connect", socket.id, "at", roomId);
-    socket.broadcast.emit("welcome", socket.id);
+    console.log(`${socket.id} -> ${roomId}`);
+    socket.broadcast.to(roomId).emit("welcome", socket.id);
 
     const metadata = {
       id: socket.id,
