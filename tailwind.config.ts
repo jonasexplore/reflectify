@@ -58,7 +58,7 @@ module.exports = {
       },
       boxShadow: {
         "card-border":
-          "0 0 0 1px hsla(0,0%,100%,.145),0 4px 6px rgba(0,0,0,.04)",
+          "0 0 0 1px hsla(var(--card-border)),0 4px 6px rgba(var(--card-border-color))",
       },
       borderRadius: {
         lg: "var(--radius)",
