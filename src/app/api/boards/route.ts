@@ -11,7 +11,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -19,7 +19,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const boards = await prisma.board.findMany({
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const body = await request.json();
