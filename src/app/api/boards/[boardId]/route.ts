@@ -13,7 +13,7 @@ export async function GET(
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(null, { status: 404 });
+      return NextResponse.json({}, { status: 404 });
     }
 
     const boardId = context.params.boardId;
@@ -47,11 +47,11 @@ export async function GET(
     });
 
     if (!board) {
-      return NextResponse.json(null, { status: 404 });
+      return NextResponse.json({}, { status: 404 });
     }
 
     if (!board.isPublic && user.id !== board.userId) {
-      return NextResponse.json(null, { status: 401 });
+      return NextResponse.json({}, { status: 401 });
     }
 
     const response = {
@@ -86,14 +86,14 @@ export async function PUT(
     });
 
     if (!board) {
-      return NextResponse.json(null, { status: 404 });
+      return NextResponse.json({}, { status: 404 });
     }
 
     if (!board.isPublic) {
       const session = await getServerSession(authOptions);
 
       if (!session) {
-        return NextResponse.json(null, { status: 401 });
+        return NextResponse.json({}, { status: 401 });
       }
 
       const user = await prisma.user.findUnique({
@@ -101,11 +101,11 @@ export async function PUT(
       });
 
       if (!user) {
-        return NextResponse.json(null, { status: 401 });
+        return NextResponse.json({}, { status: 401 });
       }
 
       if (user.id !== board.userId) {
-        return NextResponse.json(null, { status: 401 });
+        return NextResponse.json({}, { status: 401 });
       }
     }
 
@@ -140,6 +140,116 @@ export async function PUT(
     return new Response(null, { status: 204 });
   } catch (error) {
     console.log(error);
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: { boardId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({}, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email ?? "" },
+    });
+
+    if (!user) {
+      return NextResponse.json({}, { status: 401 });
+    }
+
+    const boardId = context.params.boardId;
+
+    if (!boardId) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+    });
+
+    if (!board) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    if (user.id !== board.userId) {
+      return NextResponse.json({}, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    board.name = body.name;
+    board.isPublic = body.isPublic;
+
+    await prisma.board.update({
+      data: board,
+      where: { id: board.id },
+    });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.log({ error });
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _: NextRequest,
+  context: { params: { boardId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({}, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email ?? "" },
+    });
+
+    if (!user) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    const boardId = context.params.boardId;
+
+    if (!boardId) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+    });
+
+    if (!board) {
+      return NextResponse.json({}, { status: 404 });
+    }
+
+    if (user.id !== board.userId) {
+      return NextResponse.json({}, { status: 401 });
+    }
+
+    await prisma.card.deleteMany({ where: { boardId } });
+    await prisma.boardColumn.deleteMany({ where: { boardId } });
+    await prisma.board.delete({ where: { id: boardId } });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.log({ error });
 
     return NextResponse.json(
       { error: "Internal Server Error" },
