@@ -45,7 +45,7 @@ export const useBoardHeader = () => {
           {
             color: "red",
             id: newContainerId,
-            name: `Coluna ${containers.length + 1}`,
+            name: "Nova coluna",
           },
         ],
       };

@@ -22,7 +22,7 @@ export const useContainerHeader = ({ id }: Props) => {
     if (container) {
       const update = {
         containers: containers?.map((item) => {
-          if (item.name === container.name) {
+          if (item.id === id) {
             return {
               ...item,
               name,

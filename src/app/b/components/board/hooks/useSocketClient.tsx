@@ -46,7 +46,7 @@ export const useSocketClient = ({ set, board }: any) => {
     return () => {
       client.disconnect();
     };
-  }, [board.id]);
+  }, [board.id, set]);
 
   return { loading };
 };
