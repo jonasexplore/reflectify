@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { fetchBoard } from "@/services/boards";
@@ -19,7 +19,6 @@ type Props = {
 };
 
 export const BoardCards = ({ orderBy, search }: Props) => {
-  const router = useRouter();
   const { user } = useStoreAuth();
 
   const { isPending, error, data } = useQuery({
@@ -67,15 +66,10 @@ export const BoardCards = ({ orderBy, search }: Props) => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between">
-                <button
-                  className="cursor-pointer"
-                  onClick={() => {
-                    router.push(`/b?id=${item.id}`);
-                  }}
-                >
-                  {item.name}
-                </button>
-                <MoreOptions />
+                <Link target="_blank" href={`/b?id=${item.id}`}>
+                  <button className="cursor-pointer">{item.name}</button>
+                </Link>
+                <MoreOptions board={item} />
               </div>
               <span className="text-sm text-muted-foreground">
                 {dayjs(item.created).format("DD MMM [de] YYYY")}
