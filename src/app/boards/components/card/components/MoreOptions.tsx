@@ -1,7 +1,18 @@
+import { useCallback, useState } from "react";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal } from "lucide-react";
+import { Loader, MoreHorizontal } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +27,14 @@ type Props = {
 };
 
 export const MoreOptions = ({ board }: Props) => {
+  const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loadingDeleteButton, setLoadingDeleteButton] = useState(false);
   const queryClient = useQueryClient();
 
-  const { mutateAsync: handleDeleteCard } = useMutation({
+  const { mutateAsync } = useMutation({
     mutationFn: deleteBoard,
+
     onSuccess: () => {
       queryClient.setQueryData(["boards"], (updater: BoardProps[]) => {
         return updater.filter((item) => item.id !== board.id);
@@ -27,23 +42,61 @@ export const MoreOptions = ({ board }: Props) => {
     },
   });
 
+  const handleDeleteCard = useCallback(
+    async (boardId: string) => {
+      setLoadingDeleteButton(true);
+      await mutateAsync(boardId);
+      setLoadingDeleteButton(false);
+    },
+    [mutateAsync]
+  );
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="flex gap-2 items-center">
-        <MoreHorizontal className="w-4 h-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem className="flex gap-2" onClick={() => {}}>
-          <PencilSquareIcon className="w-4 h-4" />
-          Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="flex gap-2"
-          onClick={async () => await handleDeleteCard(board.id)}
-        >
-          <TrashIcon className="w-4 h-4" /> Excluir
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger className="flex gap-2 items-center">
+          <MoreHorizontal className="w-4 h-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem className="flex gap-2" onClick={() => {}}>
+            <PencilSquareIcon className="w-4 h-4" />
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex gap-2"
+            onClick={() => setModalOpen(true)}
+          >
+            <TrashIcon className="w-4 h-4" /> Excluir
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog onOpenChange={(value) => setModalOpen(value)} open={modalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir quadro?</DialogTitle>
+            <DialogDescription>
+              Você deseja realmente excluir o quadro{" "}
+              <strong>{board.name}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button
+              className="flex gap-2"
+              onClick={async () => await handleDeleteCard(board.id)}
+              disabled={loadingDeleteButton}
+            >
+              {loadingDeleteButton && (
+                <Loader className="w-4 h-4 animate-spin duration-2000" />
+              )}
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
