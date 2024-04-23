@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { Loader } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ type Props = {
 export const BoardCards = ({ orderBy, search }: Props) => {
   const { user } = useStoreAuth();
 
-  const { isPending, error, data } = useQuery({
+  const { isPending, data } = useQuery({
     queryKey: ["boards"],
     queryFn: () => fetchBoard(),
     enabled: Boolean(user?.id),
@@ -48,12 +49,19 @@ export const BoardCards = ({ orderBy, search }: Props) => {
   }, [data, orderBy, search]);
 
   if (isPending) {
-    return "Loading component";
-  }
-
-  if (error) {
-    console.log(error.message);
-    return "An error occurred.. :/";
+    return (
+      <div className="mt-64 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <Loader className="w-8 h-8 animate-spin duration-2000" />
+          <div className="flex flex-col items-center">
+            <span className="font-bold">Carregando</span>
+            <span className="text-muted-foreground">
+              Buscando os seus quadros...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

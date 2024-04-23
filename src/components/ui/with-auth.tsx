@@ -57,7 +57,7 @@ export function withAuth(Component: any) {
             <div className="flex flex-col items-center">
               <span className="font-bold">Validando sessão</span>
               <span className="text-muted-foreground">
-                Aguarde enquando buscamos seus dados :)
+                Aguarde enquanto validamos sua sessão...
               </span>
             </div>
           </div>
