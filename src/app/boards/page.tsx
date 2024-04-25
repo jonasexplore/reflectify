@@ -39,9 +39,9 @@ function Board() {
   } = useBoards();
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-full max-w-7xl">
-        <div className="mb-4 flex justify-end items-center gap-3 flex-col md:flex-row">
+    <div className="flex justify-center flex-1">
+      <div className="flex flex-col gap-4 w-full max-w-7xl">
+        <div className="flex justify-end items-center gap-3 flex-col md:flex-row">
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
