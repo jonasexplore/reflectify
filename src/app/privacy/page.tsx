@@ -4,12 +4,12 @@ const PrivacyPage = () => {
   return (
     <div className="flex items-center justify-center">
       <div className="w-full max-w-7xl">
-        <div className="grid grid-cols-12 m-6">
-          <div className="col-span-3">
+        <div className="grid grid-cols-12 m-6 gap-6">
+          <div className="col-span-3 border-r">
             <button>Política de Privacidade</button>
           </div>
-          <div className="col-span-9 flex flex-col gap-4">
-            <strong className="text-xl">Política de Privacidade</strong>
+          <div className="col-span-9 flex flex-col gap-4 text-justify">
+            <strong className="text-2xl">Política de Privacidade</strong>
 
             <p>
               A sua privacidade é importante para nós. É política do site
