@@ -1,52 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 
+import { EmptyIcon } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
-import { fetchBoard } from "@/services/boards";
-import { useStoreAuth } from "@/store";
-
-import { SortKeys } from "../../hooks/useBoards";
 
 import { MoreOptions } from "./components/MoreOptions";
+import { BoardCardsProps, useBoardCards } from "./hooks/useBoardCards";
 
-type Props = {
-  orderBy?: SortKeys;
-  search?: string;
-};
-
-export const BoardCards = ({ orderBy, search }: Props) => {
-  const { user } = useStoreAuth();
-
-  const { isPending, data } = useQuery({
-    queryKey: ["boards"],
-    queryFn: () => fetchBoard(),
-    enabled: Boolean(user?.id),
-  });
-
-  const filtered = useMemo(() => {
-    let items = data ?? [];
-
-    if (orderBy === "date") {
-      items.sort(
-        (a, b) => dayjs(b.created).valueOf() - dayjs(a.created).valueOf()
-      );
-    } else {
-      items.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    if (search) {
-      items = items?.filter((item) =>
-        item.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
-      );
-    }
-
-    return items;
-  }, [data, orderBy, search]);
+export const BoardCards = (props: BoardCardsProps) => {
+  const { filtered, isPending } = useBoardCards(props);
 
   if (isPending) {
     return (
@@ -59,6 +24,18 @@ export const BoardCards = ({ orderBy, search }: Props) => {
               Buscando os seus quadros...
             </span>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!filtered.length) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center gap-4 text-muted-foreground">
+        <EmptyIcon width={256} height={256} />
+        <div className="flex flex-col items-center">
+          <strong>Parece um pouco vazio aqui</strong>
+          <span>Nenhum quadro foi encontrado D:</span>
         </div>
       </div>
     );
