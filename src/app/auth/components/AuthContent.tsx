@@ -28,8 +28,8 @@ export const AuthContent = ({ providers }: AuthContentProps) => {
 
   return (
     <div className="h-screen">
-      <div className="grid grid-cols-2">
-        <div className="h-screen bg-container flex flex-col justify-between">
+      <div className="flex md:grid md:grid-cols-2">
+        <div className="hidden md:flex h-screen bg-container flex-col justify-between">
           <div className="py-6 mx-6">
             <div className="flex gap-2 items-center ">
               <Image alt="logo" src={logo} className="w-4 h-4" />
@@ -37,11 +37,15 @@ export const AuthContent = ({ providers }: AuthContentProps) => {
             </div>
           </div>
         </div>
-        <div className="h-screen border-l flex flex-col items-center justify-center">
-          <div className="w-full px-6 py-4 flex gap-2 justify-end">
+        <div className="h-screen w-full border-l flex flex-col items-center justify-center">
+          <div className="w-full px-6 py-4 flex gap-2 justify-between md:justify-end">
+            <div className="md:hidden flex gap-2 items-center ">
+              <Image alt="logo" src={logo} className="w-4 h-4" />
+              <span className="font-bold">reflectify</span>
+            </div>
             <ModeToggle />
           </div>
-          <div className=" flex-1 flex flex-col justify-center gap-4 space-y-2">
+          <div className=" flex-1 flex flex-col justify-center gap-4 space-y-2 m-4">
             <div className="flex flex-col">
               <span className="text-center text-2xl font-semibold tracking-tight">
                 Acessar conta
