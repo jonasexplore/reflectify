@@ -17,7 +17,7 @@ type fetchBoardOutput = {
 
 export const fetchBoard = async () => {
   try {
-    const output = await api.get<fetchBoardOutput>("/api/boards");
+    const output = await api.get<fetchBoardOutput>("/boards");
 
     return output.data?.boards;
   } catch (error) {
@@ -28,7 +28,7 @@ export const fetchBoard = async () => {
 export const getBoard = async (
   boardId: string
 ): Promise<BoardProps | undefined> => {
-  const output = await api.get(`/api/boards/${boardId}`);
+  const output = await api.get(`/boards/${boardId}`);
 
   return output.data;
 };
@@ -45,7 +45,7 @@ export const createBoard = async ({
   name,
   isPublic,
 }: CreateBoardInput): Promise<CreateBoardOutput> => {
-  const output = await api.post("/api/boards", {
+  const output = await api.post("/boards", {
     name,
     isPublic,
   });
@@ -69,7 +69,7 @@ type UpdateBoardProps = {
 
 export const updateBoard = async (boardId: string, input: UpdateBoardProps) => {
   try {
-    const output = await api.put(`/api/boards/${boardId}`, input);
+    const output = await api.put(`/boards/${boardId}`, input);
 
     return output.data;
   } catch (error) {
@@ -79,7 +79,7 @@ export const updateBoard = async (boardId: string, input: UpdateBoardProps) => {
 
 export const deleteBoard = async (boardId: string): Promise<void> => {
   try {
-    const output = await api.delete(`/api/boards/${boardId}`);
+    const output = await api.delete(`/boards/${boardId}`);
 
     return output.data;
   } catch (error) {
