@@ -1,4 +1,10 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Termo de Privacidade | reflectify",
+  description: "Termo de Privacidade",
+};
 
 const PrivacyPage = () => {
   return (
