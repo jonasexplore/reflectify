@@ -1,20 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { unstable_batchedUpdates } from "react-dom";
 import { io } from "socket.io-client";
 
-const PORT = Number(process.env.SOCKET_PORT ?? 3005);
+import { BoardProps } from "@/types/board";
 
-export const useSocketClient = ({ set, board }: any) => {
+type Props = {
+  set: (value: Record<string, unknown>) => void;
+  board: Pick<BoardProps, "id" | "name" | "userId">;
+  hasAccess: boolean;
+};
+
+export const useSocketClient = ({ set, board, hasAccess }: Props) => {
+  const MAX_ATTEMPTS = 3;
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    if (!board.id) {
+  const socketInitializer = useCallback(async () => {
+    if (!board.id || !hasAccess) {
       return;
     }
 
-    const client = io(`:${PORT}`, {
-      path: `/api/socket`,
-      addTrailingSlash: false,
+    setError(false);
+
+    let attempts = 0;
+
+    const client = io({
+      reconnectionAttempts: MAX_ATTEMPTS,
       query: { roomId: board.id },
     });
 
@@ -22,31 +33,33 @@ export const useSocketClient = ({ set, board }: any) => {
 
     client.on("connect", () => {
       setLoading(false);
-
       client.on("update:board_updated", (payload) => {
         const result = JSON.parse(payload);
 
-        unstable_batchedUpdates(() => {
-          set(result);
-        });
+        unstable_batchedUpdates(() => set(result));
       });
     });
 
     client.on("disconnect", () => {});
 
-    client.on("connect_error", async (err) => {
-      console.log(`connect_error due to ${err.message}`);
-      try {
-        await fetch("/api/socket");
-      } catch (error) {
-        return;
+    client.io.on("reconnect_attempt", (attempt) => {
+      attempts = attempt;
+    });
+
+    client.io.on("reconnect_failed", () => {
+      if (attempts === MAX_ATTEMPTS) {
+        setError(true);
       }
     });
 
     return () => {
       client.disconnect();
     };
-  }, [board.id, set]);
+  }, [board.id, hasAccess, set]);
 
-  return { loading };
+  useEffect(() => {
+    socketInitializer();
+  }, [socketInitializer]);
+
+  return { loading, error };
 };
