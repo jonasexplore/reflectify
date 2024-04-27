@@ -55,6 +55,9 @@ module.exports = {
           DEFAULT: "hsl(var(--container))",
           foreground: "hsl(var(--container-foreground))",
         },
+        button: {
+          disabled: "hsl(var(--button-disabled))",
+        },
       },
       boxShadow: {
         "card-border":

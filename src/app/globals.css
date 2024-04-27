@@ -40,6 +40,8 @@
 
     --radius: 0.5rem;
 
+    --button-disabled: 0 0% 95%
+
     body::-webkit-scrollbar {
       background-color: #f8fafc;
       width: 12px;
@@ -94,6 +96,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    --button-disabled: 222.2 0% 15%
 
     body::-webkit-scrollbar {
       background-color: #0f172a;

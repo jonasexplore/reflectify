@@ -20,7 +20,7 @@ export const SignInButton = ({ loading, onClick }: Props) => {
   return (
     <button
       disabled={loading}
-      className="flex items-center h-10 gap-[10px] justify-center rounded-full border py-[10px] px-[12px] hover:bg-container transition-colors disabled:bg-slate-800 disabled:cursor-not-allowed"
+      className="flex items-center h-10 gap-[10px] justify-center rounded-full border py-[10px] px-[12px] hover:bg-container transition-colors disabled:bg-button-disabled disabled:cursor-not-allowed"
       onClick={onClick}
     >
       {icon}
