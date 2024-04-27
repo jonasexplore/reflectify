@@ -9,6 +9,7 @@ import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { CardProps } from "@/types/board";
+import { shuffle } from "@/utils/shuffler";
 
 import { useCard } from "./hooks/useCard";
 import { CardComments } from "./components";
@@ -17,7 +18,7 @@ type Props = DetailedHTMLProps<
   HTMLAttributes<HTMLDivElement>,
   HTMLDivElement
 > & {
-  children: React.ReactNode;
+  children: string;
   attributes?: DraggableAttributes;
   listeners?: SyntheticListenerMap;
   card: CardProps;
@@ -31,7 +32,7 @@ export const Card = ({
   attributes,
   handlerDeleteCard,
 }: Props) => {
-  const { liked, isOpen, setLiked, setIsOpen, isCreator } = useCard({
+  const { liked, isOpen, setLiked, setIsOpen, isCreator, hideCards } = useCard({
     card,
   });
 
@@ -41,7 +42,9 @@ export const Card = ({
       onOpenChange={(value) => setIsOpen(value)}
       className="rounded-md px-3 py-2 flex flex-col gap-2 bg-card"
     >
-      <div>{children}</div>
+      <div className={`${hideCards ? "blur-sm" : ""}`}>
+        {hideCards ? shuffle(children) : children}
+      </div>
       <div className="flex justify-end items-center gap-4">
         <div className="flex gap-2">
           <button

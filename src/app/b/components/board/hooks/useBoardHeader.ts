@@ -19,10 +19,25 @@ type UpdateCardInput = {
 export const useBoardHeader = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const { items, cards, containers, containersIds, board, set, socket } =
-    useStoreBoard();
+  const {
+    items,
+    cards,
+    containers,
+    containersIds,
+    board,
+    set,
+    socket,
+    hideCards,
+  } = useStoreBoard();
   const { user } = useStoreAuth();
   const [loading, setLoading] = useState(false);
+
+  function setHideCards(value: boolean) {
+    const update = { hideCards: value };
+
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
+  }
 
   function handleAddColumn() {
     if (containers.length >= 5) {
@@ -96,8 +111,18 @@ export const useBoardHeader = () => {
         cards: cardsToUpdate,
         columns,
       });
+
+      toast({
+        title: "Quadro Salvo!",
+        description: "O seu quadro foi salvo com sucesso :)",
+      });
     } catch (error) {
       console.log(error);
+      toast({
+        title: "Não foi possível salvar o quadro!",
+        description:
+          "Algo deu errado ao salvar o quadro, tente novamente em alguns minutos",
+      });
     } finally {
       setLoading(false);
     }
@@ -106,6 +131,8 @@ export const useBoardHeader = () => {
   return {
     board,
     loading,
+    hideCards,
+    setHideCards,
     handleUpdate,
     handleAddColumn,
   };

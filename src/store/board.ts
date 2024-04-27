@@ -26,6 +26,7 @@ type StoreProps = {
   cards: CardProps[];
   containers: ContainerProps[];
   containersIds: UniqueIdentifier[];
+  hideCards: boolean;
 };
 
 export const useStoreBoard = create<StoreProps>((set) => ({
@@ -36,4 +37,5 @@ export const useStoreBoard = create<StoreProps>((set) => ({
   cards: [],
   containers: [],
   containersIds: [],
+  hideCards: false,
 }));

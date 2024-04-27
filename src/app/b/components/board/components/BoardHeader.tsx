@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PlusIcon, Save, Send } from "lucide-react";
+import { Eye, EyeOff, Loader, PlusIcon, Save, Send } from "lucide-react";
 
 import { useStoreAuth } from "@/store";
 
@@ -7,7 +7,14 @@ import { useBoardHeader } from "../hooks/useBoardHeader";
 
 export const BoardHeader = () => {
   const [clickShare, setClickShare] = useState(false);
-  const { board, loading, handleUpdate, handleAddColumn } = useBoardHeader();
+  const {
+    board,
+    loading,
+    hideCards,
+    setHideCards,
+    handleUpdate,
+    handleAddColumn,
+  } = useBoardHeader();
   const { user } = useStoreAuth();
 
   const isCreator = user?.id === board.userId;
@@ -32,16 +39,36 @@ export const BoardHeader = () => {
           {isCreator && (
             <div className="flex items-center gap-2">
               <button
-                className="flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100"
+                className={`flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100 ${
+                  loading ? "cursor-not-allowed" : ""
+                }`}
                 onClick={handleUpdate}
                 disabled={loading}
               >
-                <Save className={`w-4 h-4 ${loading ? "animate-pulse" : ""}`} />
-                Salvar
+                {loading ? (
+                  <Loader className="w-4 h-4 animate-spin duration-2000" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {loading ? "Salvando..." : "Salvar"}
               </button>
             </div>
           )}
-
+          {isCreator && (
+            <div className="flex items-center gap-2">
+              <button
+                className={`flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100`}
+                onClick={() => setHideCards(!hideCards)}
+              >
+                {hideCards ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+                {hideCards ? "Mostrar" : "Esconder"}
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <button
               className="flex gap-1 p-2 rounded-lg items-center text-sm hover:bg-container transition-all ease-linear delay-100"

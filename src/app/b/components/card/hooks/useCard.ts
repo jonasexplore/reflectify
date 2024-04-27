@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useStoreAuth } from "@/store";
+import { useStoreAuth, useStoreBoard } from "@/store";
 import { CardProps } from "@/types/board";
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
 
 export const useCard = ({ card }: Props) => {
   const { user } = useStoreAuth();
+  const { hideCards } = useStoreBoard();
   const [isOpen, setIsOpen] = useState(false);
   const [liked, setLiked] = useState(false);
 
@@ -20,5 +21,6 @@ export const useCard = ({ card }: Props) => {
     setLiked,
     setIsOpen,
     isCreator,
+    hideCards,
   };
 };
