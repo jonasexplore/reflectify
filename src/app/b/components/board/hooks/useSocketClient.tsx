@@ -24,7 +24,8 @@ export const useSocketClient = ({ set, board, hasAccess }: Props) => {
 
     let attempts = 0;
 
-    const client = io({
+    const client = io(process.env.SOCKET_API_URL ?? "", {
+      path: "/api/socket",
       reconnectionAttempts: MAX_ATTEMPTS,
       query: { roomId: board.id },
     });

@@ -51,7 +51,7 @@ export const BoardCards = (props: BoardCardsProps) => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between">
-                <Link target="_blank" href={`/b?id=${item.id}`}>
+                <Link href={`/b?id=${item.id}`}>
                   <button className="cursor-pointer">{item.name}</button>
                 </Link>
                 <MoreOptions board={item} />
