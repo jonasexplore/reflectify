@@ -7,6 +7,8 @@ import {
   SortableContext,
 } from "@dnd-kit/sortable";
 
+import { NotFoundIcon, SocketConnectionErrorIcon } from "@/components/icons";
+
 import { BoardHeader } from "./components/BoardHeader";
 import { useBoard } from "./hooks/useBoard";
 import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
@@ -16,6 +18,7 @@ export const Board = () => {
     items,
     sensors,
     control,
+    hasAccess,
     onDragCancel,
     handleDragEnd,
     dropAnimation,
@@ -23,11 +26,46 @@ export const Board = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
+    errorSocketClient,
     loadingSocketClient,
     collisionDetectionStrategy,
   } = useBoard();
 
-  if (control.loading || loadingSocketClient) {
+  if (control.loading) {
+    return <BoardLoaderSkeleton />;
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center gap-4 text-muted-foreground">
+        <NotFoundIcon width={256} height={256} />
+        <div className="flex flex-col items-center">
+          <strong>Oops! Não foi possível acessar o quadro.</strong>
+          <span className="text-center">
+            Verifique se a URL está correta ou se esse é um quadro de acesso
+            público :)
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorSocketClient) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center gap-4 text-muted-foreground">
+        <SocketConnectionErrorIcon width={256} height={256} />
+        <div className="flex flex-col items-center">
+          <strong>Oops! Tivemos um problema.</strong>
+          <span className="text-center">
+            Não foi possível realizar uma conexão com o servidor. <br />
+            Por favor, tente novamente mais tarde :)
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingSocketClient) {
     return <BoardLoaderSkeleton />;
   }
 

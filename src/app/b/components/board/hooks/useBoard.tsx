@@ -21,7 +21,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { useToast } from "@/components/ui/use-toast";
@@ -56,9 +56,10 @@ export const useBoard = () => {
   const session = useSession();
   const { set, items, cards, board, socket, containers, containersIds } =
     useStoreBoard();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { loading: loadingSocketClient } = useSocketClient({ set, board });
+  const [hasAccess, setHasAccess] = useState(false);
+  const { loading: loadingSocketClient, error: errorSocketClient } =
+    useSocketClient({ set, board, hasAccess });
   const id = searchParams.get("id");
   const isCreator = user?.id === board.userId;
 
@@ -351,17 +352,18 @@ export const useBoard = () => {
       };
 
       set(update);
+      setHasAccess(true);
     } catch (error) {
       toast({
-        title: "Quadro não encontrato",
-        description: "O quadro que você tentou acessar não existe.",
+        title: "Quadro não encontrado",
+        description: "Não foi possível acessar o quadro :(",
       });
 
-      router.push("/boards");
+      setHasAccess(false);
     } finally {
       setControl((prev) => ({ ...prev, loading: false }));
     }
-  }, [id, set, toast, router]);
+  }, [id, set, toast]);
 
   const authenticateUserOnBoard = useCallback(async () => {
     if (session?.status === "authenticated" && session?.data?.user?.email) {
@@ -433,9 +435,11 @@ export const useBoard = () => {
     id,
     board,
     items,
+    socket,
     sensors,
     control,
     isCreator,
+    hasAccess,
     onDragCancel,
     dropAnimation,
     handleDragEnd,
@@ -444,6 +448,7 @@ export const useBoard = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
+    errorSocketClient,
     loadingSocketClient,
     collisionDetectionStrategy,
   };
