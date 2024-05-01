@@ -33,7 +33,7 @@ export const Profile = () => {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => {
-              localStorage.removeItem("identifier");
+              sessionStorage.removeItem("identifier");
               signOut({ callbackUrl: "http://localhost:3000/" });
             }}
             className="flex gap-2 cursor-pointer"
