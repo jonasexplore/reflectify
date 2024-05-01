@@ -100,7 +100,12 @@ export const Board = () => {
           {control.active && containersIds.includes(control.active) ? (
             <Container id={control.active} containers={items[control.active]} />
           ) : (
-            control.active && <SortableItem id={control.active} />
+            control.active && (
+              <SortableItem
+                style={{ cursor: "grabbing" }}
+                id={control.active}
+              />
+            )
           )}
         </DragOverlay>
       </DndContext>

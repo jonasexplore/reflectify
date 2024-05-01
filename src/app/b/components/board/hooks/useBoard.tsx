@@ -10,16 +10,13 @@ import {
   DragOverEvent,
   DragStartEvent,
   getFirstCollision,
-  KeyboardSensor,
-  MouseSensor,
   pointerWithin,
   rectIntersection,
-  TouchSensor,
   UniqueIdentifier,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -29,6 +26,7 @@ import { getBoard } from "@/services/boards";
 import { getUser } from "@/services/users";
 import { ItemsProps, useStoreAuth, useStoreBoard } from "@/store";
 import { CardProps } from "@/types/board";
+import { MouseSensor, TouchSensor } from "@/utils/custom-sensor";
 
 import { useSocketClient } from "./useSocketClient";
 
@@ -74,13 +72,7 @@ export const useBoard = () => {
     saveLoading: false,
   });
 
-  const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
   const findContainer = (id: UniqueIdentifier) => {
     if (id in items) {

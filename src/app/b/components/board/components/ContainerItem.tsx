@@ -31,18 +31,16 @@ export const SortableItem = ({
     <div
       {...props}
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{
         ...style,
-        ...props.style,
+        cursor: "grab",
         opacity: isDragging ? "0.5" : undefined,
+        ...props.style,
       }}
     >
-      <Card
-        card={card}
-        listeners={listeners}
-        attributes={attributes}
-        handlerDeleteCard={handlerDeleteCard}
-      >
+      <Card card={card} handlerDeleteCard={handlerDeleteCard}>
         {card.content}
       </Card>
     </div>
