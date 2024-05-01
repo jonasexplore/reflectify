@@ -17,6 +17,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -52,7 +53,7 @@ export const useBoard = () => {
   const { toast } = useToast();
   const { user, setUser } = useStoreAuth();
   const session = useSession();
-  const { set, items, cards, board, socket, containers, containersIds } =
+  const { set, reset, items, cards, board, socket, containers, containersIds } =
     useStoreBoard();
   const searchParams = useSearchParams();
   const [hasAccess, setHasAccess] = useState(false);
@@ -74,185 +75,211 @@ export const useBoard = () => {
 
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
-  const findContainer = (id: UniqueIdentifier) => {
-    if (id in items) {
-      return id;
-    }
+  const findContainer = useCallback(
+    (id: UniqueIdentifier) => {
+      if (id in items) {
+        return id;
+      }
 
-    return Object.keys(items).find((key) => items[key].includes(id));
-  };
+      return Object.keys(items).find((key) => items[key].includes(id));
+    },
+    [items]
+  );
 
-  const onDragCancel = () => {
+  const onDragCancel = useCallback(() => {
     if (control.clone) {
       set({ items: control.clone });
     }
 
     setControl((prev) => ({ ...prev, active: null, clone: null }));
-  };
+  }, [control.clone, set]);
 
-  function handleDragStart({ active }: DragStartEvent) {
-    setControl((prev) => ({ ...prev, active: active.id, clone: items }));
-  }
+  const handleDragStart = useCallback(
+    ({ active }: DragStartEvent) => {
+      setControl((prev) => ({ ...prev, active: active.id, clone: items }));
+    },
+    [items]
+  );
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (active.id in items && over?.id) {
-      const activeIndex = containersIds.indexOf(active.id);
-      const overIndex = containersIds.indexOf(over.id);
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      if (active.id in items && over?.id) {
+        const activeIndex = containersIds.indexOf(active.id);
+        const overIndex = containersIds.indexOf(over.id);
 
-      const update = {
-        containersIds: arrayMove(containersIds, activeIndex, overIndex),
-      };
+        const update = {
+          containersIds: arrayMove(containersIds, activeIndex, overIndex),
+        };
 
-      set(update);
-      socket?.emit("update:board", JSON.stringify(update));
-    }
+        set(update);
+        socket?.emit("update:board", JSON.stringify(update));
+      }
 
-    const activeContainer = findContainer(active.id);
+      const activeContainer = findContainer(active.id);
 
-    if (!activeContainer) {
-      setControl((prev) => ({ ...prev, active: null }));
-      return;
-    }
+      if (!activeContainer) {
+        setControl((prev) => ({ ...prev, active: null }));
+        return;
+      }
 
-    const overId = over?.id;
+      const overId = over?.id;
 
-    if (overId == null) {
-      setControl((prev) => ({ ...prev, active: null }));
-      return;
-    }
+      if (overId == null) {
+        setControl((prev) => ({ ...prev, active: null }));
+        return;
+      }
 
-    if (overId === TRASH_ID) {
-      const filterFromCurrentColumn = {
-        [activeContainer]: items[activeContainer].filter(
-          (id) => id !== control.active
-        ),
-      };
-
-      const update = { items: { ...items, ...filterFromCurrentColumn } };
-
-      set(update);
-      socket?.emit("update:board", JSON.stringify(update));
-
-      setControl((prev) => ({ ...prev, active: null }));
-      return;
-    }
-
-    if (overId === PLACEHOLDER_ID) {
-      const newContainerId = nanoid();
-
-      unstable_batchedUpdates(() => {
-        const moveToNewColumn = {
+      if (overId === TRASH_ID) {
+        const filterFromCurrentColumn = {
           [activeContainer]: items[activeContainer].filter(
             (id) => id !== control.active
           ),
-          [newContainerId]: [active.id],
         };
 
-        const update = {
-          items: { ...items, ...moveToNewColumn },
-          containersIds: [...containersIds, newContainerId],
-        };
+        const update = { items: { ...items, ...filterFromCurrentColumn } };
 
         set(update);
         socket?.emit("update:board", JSON.stringify(update));
 
         setControl((prev) => ({ ...prev, active: null }));
-      });
-
-      return;
-    }
-
-    const overContainer = findContainer(overId);
-
-    if (overContainer) {
-      const activeIndex = items[activeContainer].indexOf(active.id);
-      const overIndex = items[overContainer].indexOf(overId);
-
-      if (activeIndex !== overIndex) {
-        const cardMoveToOtherColumn = {
-          [overContainer]: arrayMove(
-            items[overContainer],
-            activeIndex,
-            overIndex
-          ),
-        };
-
-        const update = { items: { ...items, ...cardMoveToOtherColumn } };
-
-        set(update);
-        socket?.emit("update:board", JSON.stringify(update));
+        return;
       }
-    }
 
-    setControl((prev) => ({ ...prev, active: null }));
-  }
+      if (overId === PLACEHOLDER_ID) {
+        const newContainerId = nanoid();
 
-  function handleDragContainer({
-    over,
-    overId,
-    active,
-    overContainer,
-    activeContainer,
-  }: HandleDragItemProps) {
-    const activeItems = items[activeContainer];
-    const overItems = items[overContainer];
-    const overIndex = overItems.indexOf(overId);
-    const activeIndex = activeItems.indexOf(active.id);
+        unstable_batchedUpdates(() => {
+          const moveToNewColumn = {
+            [activeContainer]: items[activeContainer].filter(
+              (id) => id !== control.active
+            ),
+            [newContainerId]: [active.id],
+          };
 
-    const position =
-      over &&
-      active.rect.current.translated &&
-      active.rect.current.translated.top > over.rect.top + over.rect.height
-        ? 1
-        : 0;
-    let newIndex =
-      overId in items ? overItems.length + 1 : overIndex + position;
-    recentlyMovedToNewContainer.current = true;
+          const update = {
+            items: { ...items, ...moveToNewColumn },
+            containersIds: [...containersIds, newContainerId],
+          };
 
-    return {
-      ...items,
-      [activeContainer]: items[activeContainer].filter(
-        (item) => item !== active.id
-      ),
-      [overContainer]: [
-        ...overItems.slice(0, newIndex),
-        items[activeContainer][activeIndex],
-        ...overItems.slice(newIndex),
-      ],
-    };
-  }
+          set(update);
+          socket?.emit("update:board", JSON.stringify(update));
 
-  function handleDragOver({ active, over }: DragOverEvent) {
-    const overId = over?.id;
+          setControl((prev) => ({ ...prev, active: null }));
+        });
 
-    if (!overId || overId === TRASH_ID || active.id in items) {
-      return;
-    }
+        return;
+      }
 
-    const overContainer = findContainer(overId);
-    const activeContainer = findContainer(active.id);
+      const overContainer = findContainer(overId);
 
-    if (
-      !overContainer ||
-      !activeContainer ||
-      activeContainer === overContainer
-    ) {
-      return;
-    }
+      if (overContainer) {
+        const activeIndex = items[activeContainer].indexOf(active.id);
+        const overIndex = items[overContainer].indexOf(overId);
 
-    const update = {
-      items: handleDragContainer({
-        over,
-        active,
-        overId,
-        overContainer,
-        activeContainer,
-      }),
-    };
+        if (activeIndex !== overIndex) {
+          const cardMoveToOtherColumn = {
+            [overContainer]: arrayMove(
+              items[overContainer],
+              activeIndex,
+              overIndex
+            ),
+          };
 
-    set(update);
-    socket?.emit("update:board", JSON.stringify(update));
-  }
+          const update = { items: { ...items, ...cardMoveToOtherColumn } };
+
+          set(update);
+          socket?.emit("update:board", JSON.stringify(update));
+        }
+      }
+
+      setControl((prev) => ({ ...prev, active: null }));
+    },
+    [containersIds, control.active, findContainer, items, set, socket]
+  );
+
+  const handleDragContainer = useCallback(
+    ({
+      over,
+      overId,
+      active,
+      overContainer,
+      activeContainer,
+    }: HandleDragItemProps) => {
+      const activeItems = items[activeContainer];
+      const overItems = items[overContainer];
+      const overIndex = overItems.indexOf(overId);
+      const activeIndex = activeItems.indexOf(active.id);
+
+      const position =
+        over &&
+        active.rect.current.translated &&
+        active.rect.current.translated.top > over.rect.top + over.rect.height
+          ? 1
+          : 0;
+      let newIndex =
+        overId in items ? overItems.length + 1 : overIndex + position;
+      recentlyMovedToNewContainer.current = true;
+
+      return {
+        ...items,
+        [activeContainer]: items[activeContainer].filter(
+          (item) => item !== active.id
+        ),
+        [overContainer]: [
+          ...overItems.slice(0, newIndex),
+          items[activeContainer][activeIndex],
+          ...overItems.slice(newIndex),
+        ],
+      };
+    },
+    [items]
+  );
+
+  const handleDragOver = useCallback(
+    ({ active, over }: DragOverEvent) => {
+      const overId = over?.id;
+
+      if (!overId || overId === TRASH_ID || active.id in items) {
+        return;
+      }
+
+      const overContainer = findContainer(overId);
+      const activeContainer = findContainer(active.id);
+
+      if (
+        !overContainer ||
+        !activeContainer ||
+        activeContainer === overContainer
+      ) {
+        return;
+      }
+
+      const card = cards.get(active.id);
+
+      if (card) {
+        card.columnId = overContainer;
+        cards.set(active.id, card);
+      }
+
+      const update = {
+        cards,
+        items: handleDragContainer({
+          over,
+          active,
+          overId,
+          overContainer,
+          activeContainer,
+        }),
+      };
+
+      set(update);
+      socket?.emit(
+        "update:board",
+        JSON.stringify({ ...update, cards: Array.from(update.cards) })
+      );
+    },
+    [cards, findContainer, handleDragContainer, items, set, socket]
+  );
 
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
@@ -312,83 +339,95 @@ export const useBoard = () => {
     }),
   };
 
+  const { isPending, data, isError } = useQuery({
+    queryKey: ["board", id],
+    queryFn: () => getBoard(id as string),
+    enabled: Boolean(id),
+    retry: false,
+  });
+
   const handleGetBoard = useCallback(async () => {
-    try {
-      setControl((prev) => ({ ...prev, loading: true }));
+    setControl((prev) => ({ ...prev, loading: isPending }));
 
-      const board = await getBoard(id as string);
+    if (isPending || !data) {
+      return;
+    }
 
-      if (!board) {
-        return;
-      }
-
-      const update = {
-        board: { id: board.id, name: board.name, userId: board.userId },
-        containersIds: board.columns.map((column) => column.id),
-        containers: board.columns.map((column) => ({
-          color: "red",
-          id: column.id,
-          name: column.name,
-        })),
-        items: board.columns.reduce(
-          (acc, curr) =>
-            Object.assign(acc, {
-              [curr.id]: curr.cards.map((card) => card.id),
-            }),
-          {}
-        ),
-        cards: board.columns.reduce<CardProps[]>(
-          (acc, curr) => acc.concat(curr.cards),
-          []
-        ),
-      };
-
-      set(update);
-      setHasAccess(true);
-    } catch (error) {
+    if (isError) {
       toast({
         title: "Quadro não encontrado",
         description: "Não foi possível acessar o quadro :(",
       });
 
       setHasAccess(false);
-    } finally {
-      setControl((prev) => ({ ...prev, loading: false }));
+      return;
     }
-  }, [id, set, toast]);
+
+    const update = {
+      board: { id: data.id, name: data.name, userId: data.userId },
+      containersIds: data.columns.map((column) => column.id),
+      containers: data.columns.map((column) => ({
+        id: column.id,
+        name: column.name,
+      })),
+      items: data.columns.reduce(
+        (acc, curr) =>
+          Object.assign(acc, {
+            [curr.id]: curr.cards.map((card) => card.id),
+          }),
+        {}
+      ),
+      cards: data.columns.reduce<Map<UniqueIdentifier, CardProps>>(
+        (acc, curr) => {
+          curr.cards.map((card) => acc.set(card.id, card));
+          return acc;
+        },
+        new Map()
+      ),
+    };
+
+    unstable_batchedUpdates(() => {
+      reset();
+      set(update);
+      setHasAccess(true);
+    });
+  }, [data, isError, isPending, reset, set, toast]);
+
+  const { isPending: isPendingUserData, data: userData } = useQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
+  });
 
   const authenticateUserOnBoard = useCallback(async () => {
-    if (session?.status === "authenticated" && session?.data?.user?.email) {
-      const output = await getUser();
+    if (!board || isPendingUserData) {
+      return;
+    }
 
-      if (output) {
-        localStorage.setItem("identifier", output.id);
-        setUser(output.id);
+    if (session?.status === "authenticated" && session?.data?.user?.email) {
+      if (userData) {
+        sessionStorage.setItem("identifier", userData.id);
+        setUser(userData.id);
       }
 
       return;
     }
 
-    let identifier = localStorage.getItem("identifier");
+    let identifier = sessionStorage.getItem("identifier");
 
     if (!identifier) {
       identifier = nanoid();
-      localStorage.setItem("identifier", identifier);
+      sessionStorage.setItem("identifier", identifier);
     }
 
     setUser(identifier);
-  }, [session?.data?.user?.email, session?.status, setUser]);
-
-  useEffect(() => {
-    return () => {
-      set({
-        items: {},
-        cards: [],
-        containers: [],
-        containersIds: [],
-      });
-    };
-  }, [set]);
+  }, [
+    board,
+    isPendingUserData,
+    session?.data?.user?.email,
+    session?.status,
+    setUser,
+    userData,
+  ]);
 
   useEffect(() => {
     socket?.on("welcome", (welcomeId) => {
@@ -398,7 +437,7 @@ export const useBoard = () => {
 
       socket.emit("connect:update_board", {
         welcomeId,
-        board: { items, cards, containers, containersIds },
+        board: { items, cards: Array.from(cards), containers, containersIds },
       });
     });
   }, [board.name, cards, containers, containersIds, items, socket]);
@@ -423,10 +462,17 @@ export const useBoard = () => {
     authenticateUserOnBoard();
   }, [authenticateUserOnBoard]);
 
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
   return {
     id,
     board,
     items,
+    cards,
     socket,
     sensors,
     control,

@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { useSession } from "next-auth/react";
 
 import { SortKeys } from "@/app/boards/hooks/useBoards";
 import { fetchBoard } from "@/services/boards";
-import { useStoreAuth } from "@/store";
 
 export type BoardCardsProps = {
   orderBy?: SortKeys;
@@ -12,12 +12,12 @@ export type BoardCardsProps = {
 };
 
 export const useBoardCards = ({ orderBy, search }: BoardCardsProps) => {
-  const { user } = useStoreAuth();
+  const session = useSession();
 
   const { isPending, data } = useQuery({
     queryKey: ["boards"],
-    queryFn: () => fetchBoard(),
-    enabled: Boolean(user?.id),
+    queryFn: fetchBoard,
+    enabled: Boolean(session.status === "authenticated"),
   });
 
   const filtered = useMemo(() => {

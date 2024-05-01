@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader, MoreHorizontal } from "lucide-react";
@@ -29,27 +29,16 @@ type Props = {
 export const MoreOptions = ({ board }: Props) => {
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [loadingDeleteButton, setLoadingDeleteButton] = useState(false);
   const queryClient = useQueryClient();
 
-  const { mutateAsync } = useMutation({
+  const { isPending, mutateAsync } = useMutation({
     mutationFn: deleteBoard,
-
     onSuccess: () => {
       queryClient.setQueryData(["boards"], (updater: BoardProps[]) => {
         return updater.filter((item) => item.id !== board.id);
       });
     },
   });
-
-  const handleDeleteCard = useCallback(
-    async (boardId: string) => {
-      setLoadingDeleteButton(true);
-      await mutateAsync(boardId);
-      setLoadingDeleteButton(false);
-    },
-    [mutateAsync]
-  );
 
   return (
     <div>
@@ -86,10 +75,10 @@ export const MoreOptions = ({ board }: Props) => {
             </DialogClose>
             <Button
               className="flex gap-2"
-              onClick={async () => await handleDeleteCard(board.id)}
-              disabled={loadingDeleteButton}
+              onClick={async () => await mutateAsync(board.id)}
+              disabled={isPending}
             >
-              {loadingDeleteButton && (
+              {isPending && (
                 <Loader className="w-4 h-4 animate-spin duration-2000" />
               )}
               Excluir

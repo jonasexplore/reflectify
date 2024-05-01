@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { unstable_batchedUpdates } from "react-dom";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { useMutation } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 
@@ -39,7 +39,7 @@ export const useBoardHeader = () => {
     socket?.emit("update:board", JSON.stringify(update));
   }
 
-  function handleAddColumn() {
+  const handleAddColumn = useCallback(() => {
     if (containers.length >= 5) {
       toast({
         title: "Ação não permitida",
@@ -49,26 +49,27 @@ export const useBoardHeader = () => {
       return;
     }
 
-    unstable_batchedUpdates(() => {
-      const newContainerId = nanoid();
+    const newContainerId = nanoid();
 
-      const update = {
-        items: { ...items, [newContainerId]: [] },
-        containersIds: [...containersIds, newContainerId],
-        containers: [
-          ...containers,
-          {
-            color: "red",
-            id: newContainerId,
-            name: "Nova coluna",
-          },
-        ],
-      };
+    const update = {
+      items: { ...items, [newContainerId]: [] },
+      containersIds: [...containersIds, newContainerId],
+      containers: [
+        ...containers,
+        {
+          id: newContainerId,
+          name: "Nova coluna",
+        },
+      ],
+    };
 
-      set(update);
-      socket?.emit("update:board", JSON.stringify(update));
-    });
-  }
+    set(update);
+    socket?.emit("update:board", JSON.stringify(update));
+  }, [containers, containersIds, items, set, socket]);
+
+  const { mutateAsync } = useMutation({
+    mutationFn: updateBoard,
+  });
 
   const handleUpdate = useCallback(async () => {
     try {
@@ -82,7 +83,7 @@ export const useBoardHeader = () => {
         (acc, curr) => {
           const item = items[curr];
           const cardsFromColumn = item.map((id) => {
-            const card = cards.find((entry) => entry.id === id) as CardProps;
+            const card = cards.get(id) as CardProps;
 
             return {
               id,
@@ -107,9 +108,12 @@ export const useBoardHeader = () => {
         };
       });
 
-      await updateBoard(id as string, {
-        cards: cardsToUpdate,
-        columns,
+      await mutateAsync({
+        boardId: id as string,
+        input: {
+          cards: cardsToUpdate,
+          columns,
+        },
       });
 
       toast({
@@ -117,7 +121,6 @@ export const useBoardHeader = () => {
         description: "O seu quadro foi salvo com sucesso :)",
       });
     } catch (error) {
-      console.log(error);
       toast({
         title: "Não foi possível salvar o quadro!",
         description:
@@ -126,7 +129,7 @@ export const useBoardHeader = () => {
     } finally {
       setLoading(false);
     }
-  }, [cards, containers, containersIds, id, items, user?.id]);
+  }, [cards, containers, containersIds, id, items, mutateAsync, user?.id]);
 
   return {
     board,

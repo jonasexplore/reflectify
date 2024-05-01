@@ -9,9 +9,7 @@ export const getUser = async (): Promise<GetUserOutput | undefined> => {
     const output = await api.get("/users");
 
     return output.data?.user;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 type CreateUserOutput = {
@@ -23,7 +21,5 @@ export const createUser = async (): Promise<CreateUserOutput | undefined> => {
     const output = await api.post("/users");
 
     return output.data;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };

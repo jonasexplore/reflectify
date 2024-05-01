@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -37,20 +37,6 @@ export const useBoards = () => {
     },
   });
 
-  const handleCreateBoard = useCallback(
-    async (value: { name: string; isPublic: boolean }) => {
-      try {
-        await mutateAsync({
-          name: value.name,
-          isPublic: value.isPublic,
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [mutateAsync]
-  );
-
   return {
     open,
     sort,
@@ -62,6 +48,6 @@ export const useBoards = () => {
     isPending,
     searchParams,
     createQueryString,
-    handleCreateBoard,
+    handleCreateBoard: mutateAsync,
   };
 };

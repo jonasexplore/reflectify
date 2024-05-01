@@ -67,7 +67,12 @@ type UpdateBoardProps = {
   }>;
 };
 
-export const updateBoard = async (boardId: string, input: UpdateBoardProps) => {
+type UpdateBoardInput = {
+  boardId: string;
+  input: UpdateBoardProps;
+};
+
+export const updateBoard = async ({ boardId, input }: UpdateBoardInput) => {
   try {
     const output = await api.put(`/boards/${boardId}`, input);
 
@@ -82,7 +87,5 @@ export const deleteBoard = async (boardId: string): Promise<void> => {
     const output = await api.delete(`/boards/${boardId}`);
 
     return output.data;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 
@@ -12,7 +13,7 @@ type Props = {
 export const useAuthPage = ({ providers }: Props) => {
   const router = useRouter();
   const { setUser } = useStoreAuth();
-  const { data: session } = useSession();
+  const session = useSession();
   const [loading, setLoading] = useState({
     page: false,
     button: false,
@@ -23,47 +24,53 @@ export const useAuthPage = ({ providers }: Props) => {
     signIn(providers?.google.id);
   }, [providers?.google.id]);
 
-  const handleCreateAccount = useCallback(async () => {
-    try {
-      const output = await createUser();
-
-      if (output) {
-        setUser(output.id);
+  const { mutateAsync } = useMutation({
+    mutationFn: createUser,
+    onSuccess: (data) => {
+      if (data) {
+        setUser(data?.id);
         router.push("/boards");
       }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [router, setUser]);
+    },
+  });
+
+  const { isPending, data } = useQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
+  });
 
   const handleCheckUserExists = useCallback(async () => {
     try {
-      setLoading((prev) => ({ ...prev, page: true }));
+      setLoading((prev) => ({ ...prev, page: isPending }));
 
-      const output = await getUser();
-
-      if (!output) {
-        await handleCreateAccount();
+      if (isPending) {
         return;
       }
 
-      setUser(output.id);
+      if (!data) {
+        await mutateAsync();
+        return;
+      }
 
+      setUser(data.id);
       router.push("/boards");
     } catch (error) {
-      console.log(error);
     } finally {
       setLoading((prev) => ({ ...prev, page: false, button: false }));
     }
-  }, [handleCreateAccount, router, setUser]);
+  }, [data, isPending, mutateAsync, router, setUser]);
 
   useEffect(() => {
-    if (!session?.user) {
+    if (session.status !== "authenticated") {
       return;
     }
 
     handleCheckUserExists();
-  }, [handleCheckUserExists, session?.user]);
+  }, [handleCheckUserExists, session.status]);
+
+  useEffect(() => {
+    return () => setLoading({ button: false, page: false });
+  }, []);
 
   return {
     loading,

@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { redirect } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 import { getUser } from "@/services/users";
 import { useStoreAuth } from "@/store";
@@ -11,45 +11,32 @@ import { useToast } from "./use-toast";
 export function withAuth(Component: any) {
   return function WithAuth(props: any) {
     const { toast } = useToast();
-    const session = useSession();
-    const { user, setUser } = useStoreAuth();
+    const { setUser } = useStoreAuth();
 
-    const handleUserAuthenticated = useCallback(async () => {
-      try {
-        if (
-          !(
-            session.status === "authenticated" &&
-            session.data.user?.email &&
-            !user
-          )
-        ) {
-          return;
-        }
-
-        const output = await getUser();
-
-        if (output) {
-          setUser(output.id);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }, [session.data?.user?.email, session.status, setUser, user]);
+    const { isPending, data } = useQuery({
+      queryKey: ["user"],
+      queryFn: getUser,
+      retry: false,
+    });
 
     useEffect(() => {
-      if (session.status === "unauthenticated") {
+      if (isPending) {
+        return;
+      }
+
+      if (!data) {
         toast({
-          title: "Ação não permitida",
-          description:
-            "É necessário estar autenticado para acessar o ambiente :)",
+          title: "Segurança",
+          description: "É necessário estar autenticado para acessar o ambiente",
         });
+        sessionStorage.removeItem("identifier");
         return redirect("/auth");
       }
 
-      handleUserAuthenticated();
-    }, [handleUserAuthenticated, session.status, toast]);
+      setUser(data.id);
+    }, [data, isPending, setUser, toast]);
 
-    if (!session || session.status !== "authenticated") {
+    if (isPending) {
       return (
         <div className="h-screen flex items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-2">
