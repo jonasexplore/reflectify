@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { HttpStatusCode } from "axios";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 
-import { createUser, getUser } from "@/services/users";
+import {
+  createUser,
+  getUser,
+  GetUserOutput,
+  GetUserOutputError,
+} from "@/services/users";
 import { useStoreAuth } from "@/store";
 
 type Props = {
@@ -34,7 +40,10 @@ export const useAuthPage = ({ providers }: Props) => {
     },
   });
 
-  const { isPending, data } = useQuery({
+  const { isPending, data, error } = useQuery<
+    GetUserOutput,
+    GetUserOutputError
+  >({
     queryKey: ["user"],
     queryFn: getUser,
     retry: false,
@@ -48,18 +57,20 @@ export const useAuthPage = ({ providers }: Props) => {
         return;
       }
 
-      if (!data) {
+      if (error?.response?.status === HttpStatusCode.NotFound) {
         await mutateAsync();
         return;
       }
 
-      setUser(data.id);
-      router.push("/boards");
+      if (data?.id) {
+        setUser(data?.id ?? "");
+        router.push("/boards");
+      }
     } catch (error) {
     } finally {
       setLoading((prev) => ({ ...prev, page: false, button: false }));
     }
-  }, [data, isPending, mutateAsync, router, setUser]);
+  }, [data?.id, error, isPending, mutateAsync, router, setUser]);
 
   useEffect(() => {
     if (session.status !== "authenticated") {
@@ -67,7 +78,7 @@ export const useAuthPage = ({ providers }: Props) => {
     }
 
     handleCheckUserExists();
-  }, [handleCheckUserExists, session.status]);
+  }, [error, handleCheckUserExists, session.status]);
 
   useEffect(() => {
     return () => setLoading({ button: false, page: false });

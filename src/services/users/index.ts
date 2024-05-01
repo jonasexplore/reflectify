@@ -1,15 +1,16 @@
+import { AxiosResponse } from "axios";
+
 import { api } from "../api";
 
-type GetUserOutput = {
+export type GetUserOutputError = { response: AxiosResponse };
+export type GetUserOutput = {
   id: string;
 };
 
-export const getUser = async (): Promise<GetUserOutput | undefined> => {
-  try {
-    const output = await api.get("/users");
+export const getUser = async (): Promise<GetUserOutput> => {
+  const output = await api.get("/users");
 
-    return output.data?.user;
-  } catch (error) {}
+  return output.data?.user;
 };
 
 type CreateUserOutput = {
