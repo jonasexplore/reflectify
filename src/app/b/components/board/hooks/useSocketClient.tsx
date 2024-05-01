@@ -36,8 +36,9 @@ export const useSocketClient = ({ set, board, hasAccess }: Props) => {
       setLoading(false);
       client.on("update:board_updated", (payload) => {
         const result = JSON.parse(payload);
+        const cards = new Map(result.cards);
 
-        unstable_batchedUpdates(() => set(result));
+        unstable_batchedUpdates(() => set({ ...result, cards }));
       });
     });
 

@@ -16,6 +16,7 @@ import { BoardLoaderSkeleton, Container, SortableItem } from "./components";
 export const Board = () => {
   const {
     items,
+    cards,
     sensors,
     control,
     hasAccess,
@@ -100,7 +101,8 @@ export const Board = () => {
           {control.active && containersIds.includes(control.active) ? (
             <Container id={control.active} containers={items[control.active]} />
           ) : (
-            control.active && (
+            control.active &&
+            cards?.size > 0 && (
               <SortableItem
                 style={{ cursor: "grabbing" }}
                 id={control.active}

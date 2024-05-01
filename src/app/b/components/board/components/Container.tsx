@@ -6,7 +6,6 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { PlusIcon } from "@heroicons/react/24/outline";
 
 import {
   Dialog,

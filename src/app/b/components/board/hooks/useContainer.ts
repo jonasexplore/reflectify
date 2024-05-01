@@ -81,13 +81,18 @@ export const useContainer = ({ id, data }: Props) => {
       userId: user?.id as string,
     };
 
+    cards.set(card.id, card);
+
     const update = {
-      cards: [...cards, card],
+      cards,
       items: { ...items, [containerId]: [...items[containerId], card.id] },
     };
 
     set(update);
-    socket?.emit("update:board", JSON.stringify(update));
+    socket?.emit(
+      "update:board",
+      JSON.stringify({ ...update, cards: Array.from(update.cards) })
+    );
 
     router.push(
       `${pathname}?${createQueryString(
@@ -98,40 +103,59 @@ export const useContainer = ({ id, data }: Props) => {
     );
   }
 
-  function handlerDelete(containerId: UniqueIdentifier) {
-    if (containersIds.length <= 1) {
-      toast({
-        title: "Ação não permitida",
-        description: "Pelo menos uma coluna deve existir",
+  const handlerDelete = useCallback(
+    (containerId: UniqueIdentifier) => {
+      if (containersIds.length <= 1) {
+        toast({
+          title: "Ação não permitida",
+          description: "Pelo menos uma coluna deve existir",
+        });
+        return;
+      }
+
+      delete items[containerId];
+
+      cards?.forEach((card, key, items) => {
+        if (card.columnId === containerId) {
+          items.delete(key);
+        }
       });
-      return;
-    }
 
-    delete items[containerId];
+      const update = {
+        items,
+        cards,
+        containers: containers.filter((item) => item.id !== containerId),
+        containersIds: containersIds.filter((id) => id !== containerId),
+      };
 
-    const update = {
-      items,
-      cards: cards.filter((item) => item.columnId !== containerId),
-      containers: containers.filter((item) => item.id !== containerId),
-      containersIds: containersIds.filter((id) => id !== containerId),
-    };
+      set(update);
+      socket?.emit(
+        "update:board",
+        JSON.stringify({ ...update, cards: Array.from(update.cards) })
+      );
+    },
+    [cards, containers, containersIds, items, set, socket]
+  );
 
-    set(update);
-    socket?.emit("update:board", JSON.stringify(update));
-  }
+  const handlerDeleteCard = useCallback(
+    (cardId: UniqueIdentifier) => {
+      cards.delete(cardId);
+      const update = {
+        cards,
+        items: {
+          ...items,
+          [id]: items[id].filter((id) => id !== cardId),
+        },
+      };
 
-  function handlerDeleteCard(cardId: UniqueIdentifier) {
-    const update = {
-      cards: cards.filter((card) => card.id !== cardId),
-      items: {
-        ...items,
-        [id]: items[id].filter((id) => id !== cardId),
-      },
-    };
-
-    set(update);
-    socket?.emit("update:board", JSON.stringify(update));
-  }
+      set(update);
+      socket?.emit(
+        "update:board",
+        JSON.stringify({ ...update, cards: Array.from(update.cards) })
+      );
+    },
+    [cards, id, items, set, socket]
+  );
 
   const style = {
     transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),

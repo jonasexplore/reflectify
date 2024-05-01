@@ -7,7 +7,6 @@ import { BoardProps, CardProps } from "@/types/board";
 export type ContainerProps = {
   id: string;
   name: string;
-  color: string;
 };
 
 export type ItemsProps = Record<string, UniqueIdentifier[]>;
@@ -20,22 +19,28 @@ type StoreProps = {
       | ((state: StoreProps) => StoreProps | Partial<StoreProps>),
     replace?: boolean | undefined
   ) => void;
+  reset: () => void;
   socket: Socket | null;
   board: Pick<BoardProps, "id" | "name" | "userId">;
   items: ItemsProps;
-  cards: CardProps[];
+  cards: Map<UniqueIdentifier, CardProps>;
   containers: ContainerProps[];
   containersIds: UniqueIdentifier[];
   hideCards: boolean;
 };
 
-export const useStoreBoard = create<StoreProps>((set) => ({
-  set,
+export const boardStoreInitialState = {
   socket: null,
   board: { id: "", name: "", userId: "" },
   items: {},
-  cards: [],
+  cards: new Map(),
   containers: [],
   containersIds: [],
   hideCards: false,
+};
+
+export const useStoreBoard = create<StoreProps>((set) => ({
+  set,
+  reset: () => set(boardStoreInitialState),
+  ...boardStoreInitialState,
 }));

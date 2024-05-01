@@ -19,32 +19,30 @@ export const useCardComment = ({ id }: Props) => {
       return;
     }
 
-    const update = {
-      cards: cards.map((card) => {
-        if (card.id !== id) {
-          return card;
-        }
+    const card = cards.get(id);
+    if (card) {
+      card.comments.push({
+        content: comment,
+        id: nanoid(),
+        boardId: card.boardId,
+        cardId: card.id,
+        commentLikes: [],
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+      });
 
-        return {
-          ...card,
-          comments: [
-            ...card.comments,
-            {
-              content: comment,
-              id: nanoid(),
-              boardId: card.boardId,
-              cardId: card.id,
-              commentLikes: [],
-              timestamp: new Date().toISOString(),
-              userId: user.id,
-            },
-          ],
-        };
-      }),
+      cards.set(card.id, card);
+    }
+
+    const update = {
+      cards,
     };
 
     set(update);
-    socket?.emit("update:board", JSON.stringify(update));
+    socket?.emit(
+      "update:board",
+      JSON.stringify({ ...update, cards: Array.from(update.cards) })
+    );
 
     setComment("");
   }

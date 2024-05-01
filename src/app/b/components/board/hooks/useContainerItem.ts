@@ -24,7 +24,7 @@ export const useContainerItem = ({ id }: Props) => {
     transition,
   };
 
-  const card = cards.find((item) => item.id === id);
+  const card = cards.get(id);
 
   return { card, attributes, listeners, setNodeRef, isDragging, style };
 };

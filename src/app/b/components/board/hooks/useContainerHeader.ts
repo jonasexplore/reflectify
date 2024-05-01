@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import { useStoreAuth, useStoreBoard } from "@/store";
@@ -15,28 +15,31 @@ export const useContainerHeader = ({ id }: Props) => {
   const isCreator = user?.id === board.userId;
   const container = containers.find((item) => item.id === id);
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const name = event.target.value;
-    setContainerName(name);
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const name = event.target.value;
+      setContainerName(name);
 
-    if (container) {
-      const update = {
-        containers: containers?.map((item) => {
-          if (item.id === id) {
-            return {
-              ...item,
-              name,
-            };
-          }
+      if (container) {
+        const update = {
+          containers: containers?.map((item) => {
+            if (item.id === id) {
+              return {
+                ...item,
+                name,
+              };
+            }
 
-          return item;
-        }),
-      };
+            return item;
+          }),
+        };
 
-      set(update);
-      socket?.emit("update:board", JSON.stringify(update));
-    }
-  }
+        set(update);
+        socket?.emit("update:board", JSON.stringify(update));
+      }
+    },
+    [container, containers, id, set, socket]
+  );
 
   useEffect(() => {
     if (!container) {
