@@ -1,27 +1,46 @@
+import { HttpStatusCode } from "axios";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { HTTP_NAME_STATUS } from "@/types/http";
 
 import { authOptions } from "../auth/options";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session) {
-    return NextResponse.json({}, { status: 401 });
+    if (!session) {
+      logger.info("get > session > invalid");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user?.email ?? "" },
+    });
+
+    if (!user) {
+      logger.info("get > user > not found");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.NOT_FOUND },
+        { status: HttpStatusCode.NotFound }
+      );
+    }
+
+    return NextResponse.json({ user }, { status: HttpStatusCode.Ok });
+  } catch (error) {
+    logger.error(error);
+    return NextResponse.json(
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
+    );
   }
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user?.email ?? "" },
-  });
-
-  if (!user) {
-    return NextResponse.json({}, { status: 404 });
-  }
-
-  return NextResponse.json({ user }, { status: 200 });
 }
 
 export async function POST() {
@@ -29,11 +48,19 @@ export async function POST() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json({}, { status: 401 });
+      logger.info("get > session > invalid");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     if (!session.user?.email) {
-      return NextResponse.json({}, { status: 409 });
+      logger.info("get > user > invalid email");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.CONFLICT },
+        { status: HttpStatusCode.Conflict }
+      );
     }
 
     const id = nanoid();
@@ -45,13 +72,12 @@ export async function POST() {
       },
     });
 
-    return NextResponse.json({ id }, { status: 201 });
+    return NextResponse.json({ id }, { status: HttpStatusCode.Created });
   } catch (error) {
-    console.log({ error });
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }

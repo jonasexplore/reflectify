@@ -1,8 +1,11 @@
+import { HttpStatusCode } from "axios";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { HTTP_NAME_STATUS } from "@/types/http";
 
 import { authOptions } from "../auth/options";
 
@@ -11,7 +14,11 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json({}, { status: 401 });
+      logger.info("middleware > invalid session");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -19,20 +26,23 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({}, { status: 401 });
+      logger.info("middleware > user not found");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     const boards = await prisma.board.findMany({
       where: { userId: user.id },
     });
 
-    return NextResponse.json({ boards }, { status: 200 });
+    return NextResponse.json({ boards }, { status: HttpStatusCode.Ok });
   } catch (error) {
-    console.log({ error });
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }
@@ -42,7 +52,11 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json({}, { status: 401 });
+      logger.info("middleware > invalid session");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -50,10 +64,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({}, { status: 401 });
+      logger.info("middleware > user not found");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     const body = await request.json();
+
+    logger.info(body, "post > board > create");
 
     const id = nanoid();
 
@@ -73,13 +93,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(output, { status: 201 });
-  } catch (error) {
-    console.log({ error });
+    logger.info("post > board > create > success");
 
+    return NextResponse.json(output, { status: HttpStatusCode.Created });
+  } catch (error) {
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }

@@ -1,7 +1,10 @@
+import { HttpStatusCode } from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { HTTP_NAME_STATUS } from "@/types/http";
 
 import { authOptions } from "../../auth/options";
 
@@ -10,24 +13,15 @@ export async function GET(
   context: { params: { boardId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({}, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user?.email ?? "" },
-    });
-
-    if (!user) {
-      return NextResponse.json({}, { status: 404 });
-    }
-
     const boardId = context.params.boardId;
+    logger.info(`get > board > ${boardId}`);
 
     if (!boardId) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info(`get > boardId > invalid`);
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.CONFLICT },
+        { status: HttpStatusCode.Conflict }
+      );
     }
 
     const board = await prisma.board.findUnique({
@@ -47,11 +41,19 @@ export async function GET(
     });
 
     if (!board) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info(`get > board > not found`);
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.NOT_FOUND },
+        { status: HttpStatusCode.NotFound }
+      );
     }
 
-    if (!board.isPublic && user.id !== board.userId) {
-      return NextResponse.json({}, { status: 401 });
+    if (!board.isPublic) {
+      const output = await validateUserPermissions(board.userId);
+
+      if (output !== undefined) {
+        return output;
+      }
     }
 
     const response = {
@@ -59,13 +61,12 @@ export async function GET(
       columns: board.columns.toSorted((a, b) => a.position - b.position),
     };
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, { status: HttpStatusCode.Ok });
   } catch (error) {
-    console.log({ error });
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }
@@ -86,26 +87,18 @@ export async function PUT(
     });
 
     if (!board) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info("put > board > not found");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.NOT_FOUND },
+        { status: HttpStatusCode.NotFound }
+      );
     }
 
     if (!board.isPublic) {
-      const session = await getServerSession(authOptions);
+      const output = await validateUserPermissions(board.userId);
 
-      if (!session) {
-        return NextResponse.json({}, { status: 401 });
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { email: session.user?.email ?? "" },
-      });
-
-      if (!user) {
-        return NextResponse.json({}, { status: 401 });
-      }
-
-      if (user.id !== board.userId) {
-        return NextResponse.json({}, { status: 401 });
+      if (output !== undefined) {
+        return output;
       }
     }
 
@@ -137,13 +130,12 @@ export async function PUT(
       )
     );
 
-    return new Response(null, { status: 204 });
+    return new Response(null, { status: HttpStatusCode.NoContent });
   } catch (error) {
-    console.log(error);
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }
@@ -153,24 +145,20 @@ export async function PATCH(
   context: { params: { boardId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const output = await getUser();
 
-    if (!session) {
-      return NextResponse.json({}, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user?.email ?? "" },
-    });
-
-    if (!user) {
-      return NextResponse.json({}, { status: 401 });
+    if (output instanceof NextResponse) {
+      return output;
     }
 
     const boardId = context.params.boardId;
 
     if (!boardId) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info("patch > board > invalid boardId");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.CONFLICT },
+        { status: HttpStatusCode.Conflict }
+      );
     }
 
     const board = await prisma.board.findUnique({
@@ -178,11 +166,19 @@ export async function PATCH(
     });
 
     if (!board) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info("patch > board > not found");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.NOT_FOUND },
+        { status: HttpStatusCode.NotFound }
+      );
     }
 
-    if (user.id !== board.userId) {
-      return NextResponse.json({}, { status: 401 });
+    if (output.id !== board.userId) {
+      logger.info("patch > board > unauthorized");
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     const body = await request.json();
@@ -195,13 +191,12 @@ export async function PATCH(
       where: { id: board.id },
     });
 
-    return new Response(null, { status: 204 });
+    return new Response(null, { status: HttpStatusCode.NoContent });
   } catch (error) {
-    console.log({ error });
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
     );
   }
 }
@@ -211,24 +206,20 @@ export async function DELETE(
   context: { params: { boardId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const output = await getUser();
 
-    if (!session) {
-      return NextResponse.json({}, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user?.email ?? "" },
-    });
-
-    if (!user) {
-      return NextResponse.json({}, { status: 404 });
+    if (output instanceof NextResponse) {
+      return output;
     }
 
     const boardId = context.params.boardId;
 
     if (!boardId) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info(`delete > boardId > invalid`);
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.CONFLICT },
+        { status: HttpStatusCode.Conflict }
+      );
     }
 
     const board = await prisma.board.findUnique({
@@ -236,24 +227,73 @@ export async function DELETE(
     });
 
     if (!board) {
-      return NextResponse.json({}, { status: 404 });
+      logger.info(`delete > board > not found`);
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.NOT_FOUND },
+        { status: HttpStatusCode.NotFound }
+      );
     }
 
-    if (user.id !== board.userId) {
-      return NextResponse.json({}, { status: 401 });
+    if (output.id !== board.userId) {
+      logger.info(`delete > board > unauthorized`);
+      return NextResponse.json(
+        { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+        { status: HttpStatusCode.Unauthorized }
+      );
     }
 
     await prisma.card.deleteMany({ where: { boardId } });
     await prisma.boardColumn.deleteMany({ where: { boardId } });
     await prisma.board.delete({ where: { id: boardId } });
 
-    return new Response(null, { status: 204 });
+    return new Response(null, { status: HttpStatusCode.NoContent });
   } catch (error) {
-    console.log({ error });
-
+    logger.error(error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: HTTP_NAME_STATUS.INTERNAL_SERVER_ERROR },
+      { status: HttpStatusCode.InternalServerError }
+    );
+  }
+}
+
+async function getUser() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    logger.info("put > session > invalid");
+    return NextResponse.json(
+      { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+      { status: HttpStatusCode.Unauthorized }
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user?.email ?? "" },
+  });
+
+  if (!user) {
+    logger.info("put > user > not found");
+    return NextResponse.json(
+      { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+      { status: HttpStatusCode.Unauthorized }
+    );
+  }
+
+  return user;
+}
+
+async function validateUserPermissions(userIdFromBoard: string) {
+  const output = await getUser();
+
+  if (output instanceof NextResponse) {
+    return output;
+  }
+
+  if (output.id !== userIdFromBoard) {
+    logger.info("put > board > unauthorized");
+    return NextResponse.json(
+      { message: HTTP_NAME_STATUS.UNAUTHORIZED },
+      { status: HttpStatusCode.Unauthorized }
     );
   }
 }
