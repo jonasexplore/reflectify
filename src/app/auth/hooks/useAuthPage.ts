@@ -37,6 +37,7 @@ export const useAuthPage = ({ providers }: Props) => {
   const { isPending, data } = useQuery({
     queryKey: ["user"],
     queryFn: getUser,
+    retry: false,
   });
 
   const handleCheckUserExists = useCallback(async () => {

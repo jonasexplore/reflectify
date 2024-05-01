@@ -396,6 +396,7 @@ export const useBoard = () => {
   const { isPending: isPendingUserData, data: userData } = useQuery({
     queryKey: ["user"],
     queryFn: getUser,
+    retry: false,
   });
 
   const authenticateUserOnBoard = useCallback(async () => {
