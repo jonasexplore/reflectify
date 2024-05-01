@@ -49,20 +49,20 @@ export const ContainerHeader = ({
             onChange={handleChange}
           />
           <div className="flex gap-2">
-            <PlusIcon
-              onClick={handleNewCard}
-              className="h-5 w-5  cursor-pointer"
-            />
-            <TrashIcon
-              onClick={() => handlerDelete(id)}
-              className="h-5 w-5 text-red-400 cursor-pointer"
-            />
-            <DragHandleDots2Icon
-              style={{ cursor: isDragging ? "grabbing" : "grab" }}
-              className="h-5 w-5"
-              {...attributes}
-              {...listeners}
-            />
+            <button onClick={handleNewCard}>
+              <PlusIcon className="h-5 w-5  cursor-pointer" />
+            </button>
+            <button onClick={() => handlerDelete(id)}>
+              <TrashIcon className="h-5 w-5 text-red-400 cursor-pointer" />
+            </button>
+            <button>
+              <DragHandleDots2Icon
+                style={{ cursor: isDragging ? "grabbing" : "grab" }}
+                className="h-5 w-5"
+                {...attributes}
+                {...listeners}
+              />
+            </button>
           </div>
         </>
       )}
