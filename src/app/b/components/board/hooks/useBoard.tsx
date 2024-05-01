@@ -339,75 +339,61 @@ export const useBoard = () => {
     }),
   };
 
-  const { isPending, data, isError } = useQuery({
-    queryKey: ["board", id],
-    queryFn: () => getBoard(id as string),
-    enabled: Boolean(id),
-    retry: false,
-  });
-
   const handleGetBoard = useCallback(async () => {
-    setControl((prev) => ({ ...prev, loading: isPending }));
+    try {
+      setControl((prev) => ({ ...prev, loading: true }));
 
-    if (isPending || !data) {
-      return;
-    }
+      const board = await getBoard(id as string);
 
-    if (isError) {
+      if (!board) {
+        return;
+      }
+
+      const update = {
+        board: { id: board.id, name: board.name, userId: board.userId },
+        containersIds: board.columns.map((column) => column.id),
+        containers: board.columns.map((column) => ({
+          color: "red",
+          id: column.id,
+          name: column.name,
+        })),
+        items: board.columns.reduce(
+          (acc, curr) =>
+            Object.assign(acc, {
+              [curr.id]: curr.cards.map((card) => card.id),
+            }),
+          {}
+        ),
+        cards: board.columns.reduce<Map<UniqueIdentifier, CardProps>>(
+          (acc, curr) => {
+            curr.cards.map((card) => acc.set(card.id, card));
+            return acc;
+          },
+          new Map()
+        ),
+      };
+
+      set(update);
+      setHasAccess(true);
+    } catch (error) {
       toast({
         title: "Quadro não encontrado",
         description: "Não foi possível acessar o quadro :(",
       });
 
       setHasAccess(false);
-      return;
+    } finally {
+      setControl((prev) => ({ ...prev, loading: false }));
     }
-
-    const update = {
-      board: { id: data.id, name: data.name, userId: data.userId },
-      containersIds: data.columns.map((column) => column.id),
-      containers: data.columns.map((column) => ({
-        id: column.id,
-        name: column.name,
-      })),
-      items: data.columns.reduce(
-        (acc, curr) =>
-          Object.assign(acc, {
-            [curr.id]: curr.cards.map((card) => card.id),
-          }),
-        {}
-      ),
-      cards: data.columns.reduce<Map<UniqueIdentifier, CardProps>>(
-        (acc, curr) => {
-          curr.cards.map((card) => acc.set(card.id, card));
-          return acc;
-        },
-        new Map()
-      ),
-    };
-
-    unstable_batchedUpdates(() => {
-      reset();
-      set(update);
-      setHasAccess(true);
-    });
-  }, [data, isError, isPending, reset, set, toast]);
-
-  const { isPending: isPendingUserData, data: userData } = useQuery({
-    queryKey: ["user"],
-    queryFn: getUser,
-    retry: false,
-  });
+  }, [id, set, toast]);
 
   const authenticateUserOnBoard = useCallback(async () => {
-    if (!board || isPendingUserData) {
-      return;
-    }
-
     if (session?.status === "authenticated" && session?.data?.user?.email) {
-      if (userData) {
-        sessionStorage.setItem("identifier", userData.id);
-        setUser(userData.id);
+      const output = await getUser();
+
+      if (output) {
+        sessionStorage.setItem("identifier", output.id);
+        setUser(output.id);
       }
 
       return;
@@ -421,14 +407,7 @@ export const useBoard = () => {
     }
 
     setUser(identifier);
-  }, [
-    board,
-    isPendingUserData,
-    session?.data?.user?.email,
-    session?.status,
-    setUser,
-    userData,
-  ]);
+  }, [session?.data?.user?.email, session?.status, setUser]);
 
   useEffect(() => {
     socket?.on("welcome", (welcomeId) => {
