@@ -14,3 +14,10 @@ type SocketWithIO = NetSocket & {
 export type NextApiResponseWithSocket = NextResponse & {
   socket: SocketWithIO;
 };
+
+export enum HTTP_NAME_STATUS {
+  UNAUTHORIZED = "Unauthorized",
+  NOT_FOUND = "Not found",
+  CONFLICT = "Conflict",
+  INTERNAL_SERVER_ERROR = "Internal server error",
+}
