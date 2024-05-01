@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
+import { PlusIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Eye, EyeOff, Loader, PlusIcon, Save, Send } from "lucide-react";
+import {
+  ArchiveIcon,
+  EyeClosedIcon,
+  EyeOpenIcon,
+  PlusIcon,
+  Share1Icon,
+  TokensIcon,
+} from "@radix-ui/react-icons";
 
 import { useStoreAuth } from "@/store";
 
@@ -46,9 +53,9 @@ export const BoardHeader = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <Loader className="w-4 h-4 animate-spin duration-2000" />
+                  <TokensIcon className="w-4 h-4 animate-spin duration-2000" />
                 ) : (
-                  <Save className="w-4 h-4" />
+                  <ArchiveIcon className="w-4 h-4" />
                 )}
                 {loading ? "Salvando..." : "Salvar"}
               </button>
@@ -61,9 +68,9 @@ export const BoardHeader = () => {
                 onClick={() => setHideCards(!hideCards)}
               >
                 {hideCards ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeClosedIcon className="w-4 h-4" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <EyeOpenIcon className="w-4 h-4" />
                 )}
                 {hideCards ? "Mostrar" : "Esconder"}
               </button>
@@ -78,7 +85,7 @@ export const BoardHeader = () => {
                 !clickShare && setTimeout(() => setClickShare(false), 2000);
               }}
             >
-              <Send className="w-4 h-4" />
+              <Share1Icon className="w-4 h-4" />
               {clickShare ? "Copiado!" : "Compartilhar"}
             </button>
           </div>

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
+import { TokensIcon } from "@radix-ui/react-icons";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,7 @@ export const BoardForm = ({ onSubmit, loadingButton }: Props) => {
         <div className="flex justify-end">
           <Button className="flex gap-2" type="submit" disabled={loadingButton}>
             {loadingButton && (
-              <Loader className="w-4 h-4 animate-spin duration-2000" />
+              <TokensIcon className="w-4 h-4 animate-spin duration-2000" />
             )}
             Criar
           </Button>

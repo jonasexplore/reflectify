@@ -1,4 +1,4 @@
-import { Send } from "lucide-react";
+import { PaperPlaneIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +31,7 @@ export const CardComments = ({ card }: Props) => {
         <div className="flex justify-end">
           <Button size="sm" onClick={handleComment}>
             <span className="flex gap-2 items-center">
-              <Send className="h-4 w-4" />
+              <PaperPlaneIcon className="h-4 w-4" />
               Comentar
             </span>
           </Button>

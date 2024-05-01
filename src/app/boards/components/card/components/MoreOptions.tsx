@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  DotsVerticalIcon,
+  Pencil1Icon,
+  TokensIcon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,11 +48,11 @@ export const MoreOptions = ({ board }: Props) => {
     <div>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger className="flex gap-2 items-center">
-          <MoreHorizontal className="w-4 h-4" />
+          <DotsVerticalIcon className="w-4 h-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem className="flex gap-2" onClick={() => {}}>
-            <PencilSquareIcon className="w-4 h-4" />
+            <Pencil1Icon className="w-4 h-4" />
             Editar
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -79,7 +83,7 @@ export const MoreOptions = ({ board }: Props) => {
               disabled={isPending}
             >
               {isPending && (
-                <Loader className="w-4 h-4 animate-spin duration-2000" />
+                <TokensIcon className="w-4 h-4 animate-spin duration-2000" />
               )}
               Excluir
             </Button>

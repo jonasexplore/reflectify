@@ -1,9 +1,12 @@
 "use client";
 import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { HeartIcon } from "@heroicons/react/20/solid";
-import { ChatBubbleOvalLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { CollapsibleTrigger } from "@radix-ui/react-collapsible";
+import {
+  ChatBubbleIcon,
+  HeartFilledIcon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { CardProps } from "@/types/board";
@@ -42,7 +45,7 @@ export const Card = ({ card, children, handlerDeleteCard }: Props) => {
               onClick={() => setLiked(!liked)}
               className="flex gap-1 items-center text-sm cursor-pointer"
             >
-              <HeartIcon
+              <HeartFilledIcon
                 className={
                   liked
                     ? "w-4 h-4 text-red-500 transition-colors ease-in-out"
@@ -56,7 +59,7 @@ export const Card = ({ card, children, handlerDeleteCard }: Props) => {
               <span className="text-sm font-semibold">
                 {card?.comments?.length}
               </span>
-              <ChatBubbleOvalLeftIcon className="h-4 w-4" />
+              <ChatBubbleIcon className="h-4 w-4" />
             </button>
           </CollapsibleTrigger>
           {isCreator && (

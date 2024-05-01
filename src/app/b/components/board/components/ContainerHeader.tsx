@@ -2,9 +2,11 @@
 
 import { DraggableAttributes, UniqueIdentifier } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import { PlusIcon } from "lucide-react";
+import {
+  DragHandleDots2Icon,
+  PlusIcon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 
 import { useContainerHeader } from "../hooks/useContainerHeader";
 

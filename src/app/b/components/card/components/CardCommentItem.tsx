@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HeartIcon } from "@heroicons/react/20/solid";
+import { HeartFilledIcon } from "@radix-ui/react-icons";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CommentProps } from "@/types/board";
@@ -27,7 +27,7 @@ export const CardCommentItem = ({ comment }: Props) => {
               onClick={() => setLiked(!liked)}
               className="flex gap-1 items-center text-sm cursor-pointer"
             >
-              <HeartIcon
+              <HeartFilledIcon
                 className={
                   liked
                     ? "w-4 h-4 text-red-500 transition-colors ease-in-out"
