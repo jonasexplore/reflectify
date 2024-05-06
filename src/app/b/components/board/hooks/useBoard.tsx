@@ -53,8 +53,17 @@ export const useBoard = () => {
   const { toast } = useToast();
   const { user, setUser } = useStoreAuth();
   const session = useSession();
-  const { set, reset, items, cards, board, socket, containers, containersIds } =
-    useStoreBoard();
+  const {
+    set,
+    reset,
+    items,
+    cards,
+    board,
+    socket,
+    containers,
+    containersIds,
+    hideCards,
+  } = useStoreBoard();
   const searchParams = useSearchParams();
   const [hasAccess, setHasAccess] = useState(false);
   const { loading: loadingSocketClient, error: errorSocketClient } =
@@ -417,10 +426,16 @@ export const useBoard = () => {
 
       socket.emit("connect:update_board", {
         welcomeId,
-        board: { items, cards: Array.from(cards), containers, containersIds },
+        board: {
+          items,
+          cards: Array.from(cards),
+          containers,
+          containersIds,
+          hideCards,
+        },
       });
     });
-  }, [board.name, cards, containers, containersIds, items, socket]);
+  }, [board.name, cards, containers, containersIds, hideCards, items, socket]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
