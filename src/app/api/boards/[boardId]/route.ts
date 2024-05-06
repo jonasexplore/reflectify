@@ -2,6 +2,7 @@ import { HttpStatusCode } from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
+import { UpdateCardInput } from "@/app/b/components/board/hooks/useBoardHeader";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { HTTP_NAME_STATUS } from "@/types/http";
@@ -78,7 +79,14 @@ export async function PUT(
   try {
     const body = await request.json();
 
-    const { columns, cards } = body;
+    const { columns, cards } = body as {
+      columns: {
+        id: string;
+        name: string;
+        position: number;
+      }[];
+      cards: UpdateCardInput[];
+    };
 
     const { boardId } = context.params;
 
@@ -102,33 +110,49 @@ export async function PUT(
       }
     }
 
-    await prisma.card.deleteMany({ where: { boardId } });
-    await prisma.boardColumn.deleteMany({ where: { boardId } });
-    await Promise.all(
-      columns.map((column: any) =>
-        prisma.boardColumn.create({
-          data: {
-            boardId,
-            id: column.id,
-            name: column.name,
-            position: column.position,
-          },
-        })
-      )
-    );
-    await Promise.all(
-      cards.map((card: any) =>
-        prisma.card.create({
-          data: {
-            boardId,
-            id: card.id,
-            userId: card.userId,
-            columnId: card.columnId,
-            content: card.content,
-          },
-        })
-      )
-    );
+    const process = async () => {
+      await prisma.comment.deleteMany({ where: { boardId } });
+      await prisma.card.deleteMany({ where: { boardId } });
+      await prisma.boardColumn.deleteMany({ where: { boardId } });
+      await Promise.all(
+        columns.map((column: any) =>
+          prisma.boardColumn.create({
+            data: {
+              boardId,
+              id: column.id,
+              name: column.name,
+              position: column.position,
+            },
+          })
+        )
+      );
+      await Promise.all(
+        cards.map((card) =>
+          prisma.card.create({
+            data: {
+              boardId,
+              id: card.id as string,
+              userId: card.userId,
+              columnId: card.columnId as string,
+              content: card.content,
+              comments: {
+                createMany: {
+                  data: card.comments.map((comment) => ({
+                    boardId: comment.boardId,
+                    content: comment.content,
+                    id: comment.id,
+                    userId: comment.userId,
+                    timestamp: comment.timestamp,
+                  })),
+                },
+              },
+            },
+          })
+        )
+      );
+    };
+
+    process();
 
     return new Response(null, { status: HttpStatusCode.NoContent });
   } catch (error) {
