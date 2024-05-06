@@ -24,7 +24,7 @@ type Props = DetailedHTMLProps<
 };
 
 export const Card = ({ card, children, handlerDeleteCard }: Props) => {
-  const { liked, isOpen, setLiked, setIsOpen, isCreator, hideCards } = useCard({
+  const { liked, isOpen, setLiked, setIsOpen, hideCards } = useCard({
     card,
   });
 
@@ -40,11 +40,14 @@ export const Card = ({ card, children, handlerDeleteCard }: Props) => {
           data-no-dnd="true"
           className="flex justify-end items-center gap-4 cursor-default"
         >
-          <div className="flex gap-2">
+          <div className="hidden flex gap-2">
             <button
               onClick={() => setLiked(!liked)}
               className="flex gap-1 items-center text-sm cursor-pointer"
             >
+              <span className="text-sm font-semibold">
+                {card?.likes?.length}
+              </span>
               <HeartFilledIcon
                 className={
                   liked
@@ -62,18 +65,19 @@ export const Card = ({ card, children, handlerDeleteCard }: Props) => {
               <ChatBubbleIcon className="h-4 w-4" />
             </button>
           </CollapsibleTrigger>
-          {isCreator && (
-            <button
-              onClick={() => handlerDeleteCard?.(card.id)}
-              className="flex gap-1 items-center text-sm cursor-pointer"
-            >
-              <TrashIcon className="h-4 w-4 cursor-pointer text-red-400" />
-            </button>
-          )}
+          <button
+            onClick={() => handlerDeleteCard?.(card.id)}
+            className="flex gap-1 items-center text-sm cursor-pointer"
+          >
+            <TrashIcon className="h-4 w-4 cursor-pointer text-red-400" />
+          </button>
         </div>
       </div>
 
-      <CollapsibleContent className="space-y-2 transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+      <CollapsibleContent
+        data-no-dnd="true"
+        className="space-y-2 transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden cursor-default"
+      >
         <CardComments card={card} />
       </CollapsibleContent>
     </Collapsible>
