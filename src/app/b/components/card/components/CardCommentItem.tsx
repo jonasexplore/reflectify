@@ -19,9 +19,9 @@ export const CardCommentItem = ({ comment }: Props) => {
         </Avatar>
         <div className="flex-1">
           <span className="text-sm">{comment.content}</span>
-          <div className="flex justify-end items-center gap-2">
+          <div className="hidden flex justify-end items-center gap-2">
             <span className="text-sm font-semibold">
-              {comment.commentLikes.length}
+              {comment?.commentLikes?.length}
             </span>
             <button
               onClick={() => setLiked(!liked)}
