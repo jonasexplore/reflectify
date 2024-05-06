@@ -28,11 +28,11 @@ export const BoardHeader = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 py-2 rounded-lg">
+      <div className="flex flex-wrap items-center justify-between gap-3 py-2 rounded-lg">
         <div>
           <span className="text-md font-bold">{board.name}</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {isCreator && (
             <div className="flex items-center">
               <button

@@ -71,7 +71,7 @@ export const Board = () => {
   }
 
   return (
-    <div className="flex flex-col gap-2 flex-1">
+    <div className="flex flex-col gap-2 flex-1 pb-4">
       <BoardHeader />
       <DndContext
         sensors={sensors}
