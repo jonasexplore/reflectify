@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { useMutation } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
@@ -9,11 +9,13 @@ import { updateBoard } from "@/services/boards";
 import { useStoreAuth, useStoreBoard } from "@/store";
 import { CardProps } from "@/types/board";
 
-type UpdateCardInput = {
+export type UpdateCardInput = {
   userId: string;
   content: string;
   id: UniqueIdentifier;
   columnId: UniqueIdentifier;
+  comments: CardProps["comments"];
+  likes: CardProps["likes"];
 };
 
 export const useBoardHeader = () => {
@@ -31,6 +33,7 @@ export const useBoardHeader = () => {
   } = useStoreBoard();
   const { user } = useStoreAuth();
   const [loading, setLoading] = useState(false);
+  const [hasChange, setHasChange] = useState(false);
 
   function setHideCards(value: boolean) {
     const update = { hideCards: value };
@@ -73,7 +76,7 @@ export const useBoardHeader = () => {
 
   const handleUpdate = useCallback(async () => {
     try {
-      if (!user?.id) {
+      if (!user?.id || user.id !== board.userId) {
         return;
       }
 
@@ -90,6 +93,8 @@ export const useBoardHeader = () => {
               columnId: curr,
               content: card?.content,
               userId: user.id,
+              comments: card.comments,
+              likes: card.likes,
             };
           });
 
@@ -115,21 +120,30 @@ export const useBoardHeader = () => {
           columns,
         },
       });
-
-      toast({
-        title: "Quadro Salvo!",
-        description: "O seu quadro foi salvo com sucesso :)",
-      });
     } catch (error) {
-      toast({
-        title: "Não foi possível salvar o quadro!",
-        description:
-          "Algo deu errado ao salvar o quadro, tente novamente em alguns minutos",
-      });
     } finally {
       setLoading(false);
     }
   }, [cards, containers, containersIds, id, items, mutateAsync, user?.id]);
+
+  useEffect(() => {
+    if (loading || !hasChange) {
+      return;
+    }
+
+    const id = setInterval(() => {
+      handleUpdate();
+      setHasChange(false);
+    }, 10000);
+
+    return () => clearInterval(id);
+  }, [handleUpdate, hasChange, loading]);
+
+  useEffect(() => {
+    if (cards || containers || containersIds || items) {
+      setHasChange(true);
+    }
+  }, [cards, containers, containersIds, items]);
 
   return {
     board,
