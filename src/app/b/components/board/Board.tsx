@@ -27,8 +27,8 @@ export const Board = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
-    errorSocketClient,
-    loadingSocketClient,
+    // errorSocketClient,
+    // loadingSocketClient,
     collisionDetectionStrategy,
   } = useBoard();
 
@@ -51,24 +51,24 @@ export const Board = () => {
     );
   }
 
-  if (errorSocketClient) {
-    return (
-      <div className="flex flex-col flex-1 items-center justify-center gap-4 text-muted-foreground">
-        <SocketConnectionErrorIcon width={256} height={256} />
-        <div className="flex flex-col items-center">
-          <strong>Oops! Tivemos um problema.</strong>
-          <span className="text-center">
-            Não foi possível realizar uma conexão com o servidor. <br />
-            Por favor, tente novamente mais tarde :)
-          </span>
-        </div>
-      </div>
-    );
-  }
+  // if (errorSocketClient) {
+  //   return (
+  //     <div className="flex flex-col flex-1 items-center justify-center gap-4 text-muted-foreground">
+  //       <SocketConnectionErrorIcon width={256} height={256} />
+  //       <div className="flex flex-col items-center">
+  //         <strong>Oops! Tivemos um problema.</strong>
+  //         <span className="text-center">
+  //           Não foi possível realizar uma conexão com o servidor. <br />
+  //           Por favor, tente novamente mais tarde :)
+  //         </span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (loadingSocketClient) {
-    return <BoardLoaderSkeleton />;
-  }
+  // if (loadingSocketClient) {
+  //   return <BoardLoaderSkeleton />;
+  // }
 
   return (
     <div className="flex flex-col gap-2 flex-1 pb-4">

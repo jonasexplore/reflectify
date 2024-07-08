@@ -66,8 +66,8 @@ export const useBoard = () => {
   } = useStoreBoard();
   const searchParams = useSearchParams();
   const [hasAccess, setHasAccess] = useState(false);
-  const { loading: loadingSocketClient, error: errorSocketClient } =
-    useSocketClient({ set, board, hasAccess });
+  // const { loading: loadingSocketClient, error: errorSocketClient } =
+  //   useSocketClient({ set, board, hasAccess });
   const id = searchParams.get("id");
   const isCreator = user?.id === board.userId;
 
@@ -481,8 +481,8 @@ export const useBoard = () => {
     handleDragOver,
     PLACEHOLDER_ID,
     handleDragStart,
-    errorSocketClient,
-    loadingSocketClient,
+    // errorSocketClient,
+    // loadingSocketClient,
     collisionDetectionStrategy,
   };
 };
